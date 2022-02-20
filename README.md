@@ -1,6 +1,6 @@
 # Backend-Final--Year-Project
 
-### USER REGISTRATION - post this data using form 
+### 1] USER REGISTRATION - post this data using form 
 ##### 1] username
 ##### 2] email
 ##### 3] password
