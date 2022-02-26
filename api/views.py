@@ -1,16 +1,8 @@
 from django.http import HttpResponse
-from django.shortcuts import render
-
-#for handling duplicate username exception
-from django.db import IntegrityError
-
-# for user creation
-from django.contrib.auth.models import User
-
-# for csrf verification
-from django.views.decorators.csrf import csrf_exempt
-
-# our api_key = "developer_us,yadnesh,madhukrishna,vedant,amit,kiran"
+from .models import UserProfilePhoto  #import models
+from django.db import IntegrityError #for handling duplicate username exception
+from django.contrib.auth.models import User # for user creation
+from django.views.decorators.csrf import csrf_exempt # for csrf verification
 
 
 @csrf_exempt  # to avoid csrf forbideen verification error
@@ -22,13 +14,20 @@ def registerUser(request):
         password = request.POST.get('password')
         firstName = request.POST.get('firstName')
         lastName = request.POST.get('lastName')
+        profile_pic = request.FILES['profile_pic'] #profile_picture
 
         try:
             #userObject = User.objects.create_user("username", "email","password")
             userObject = User.objects.create_user(userName, email, password)
             userObject.first_name = firstName
             userObject.last_name = lastName
-            userObject.save()
+            
+            # saving profile_photo to UserProfilePhoto Table
+            profilePhoto = UserProfilePhoto(profile_pic=profile_pic,user=userObject)
+            profilePhoto.save()
+
+            userObject.save()    
+
             return HttpResponse("User Registered successfully")
 
         except IntegrityError :
