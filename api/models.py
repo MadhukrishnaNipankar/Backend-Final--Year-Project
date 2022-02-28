@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.timezone import now
 
 
 # For Managing User Profile Picture
@@ -16,10 +17,11 @@ class VideoData(models.Model):
     video_desc = models.TextField(max_length=5000)
     video_likes = models.IntegerField(default=0)
     video_views = models.IntegerField(default=0)
+    video_report_count = models.IntegerField(default=0)
     video_file = models.FileField(upload_to="videoFiles",null=False)
     notes_file = models.FileField(upload_to="notesFiles",null=True)
+    timestamp = models.DateTimeField(default=now)
     user = models.ForeignKey(User,on_delete=models.CASCADE) # associated with an user
-    # upload_date 
 
 
 
