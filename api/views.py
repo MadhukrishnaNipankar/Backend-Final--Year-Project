@@ -10,8 +10,7 @@ from django.db import IntegrityError
 from django.contrib.auth.models import User  # for user creation
 from django.views.decorators.csrf import csrf_exempt  # for csrf verification
 
-
-
+# For Registering a New User
 @csrf_exempt  # to avoid csrf forbideen verification error
 def registerUser(request):
     if request.method == "POST":
@@ -42,6 +41,7 @@ def registerUser(request):
             return HttpResponse("username :  '"+userName+"'  is already taken. " + "please try another one")
 
 
+# To Upload Video Data
 @csrf_exempt  # to avoid csrf forbiden verification error
 def uploadVideo(request):
     if request.method == "POST":
@@ -59,3 +59,45 @@ def uploadVideo(request):
         return HttpResponse("Video Uploaded Successfully")
     
     return HttpResponse("Error ! Please try again !")
+
+
+# To increment Like Count
+@csrf_exempt  # to avoid csrf forbiden verification error
+def likeVideo(request):
+    if request.method == "POST":
+        sno = request.POST.get('videoId')
+        likedVideoObject = VideoData.objects.get(sno=sno) 
+        likedVideoObject.video_likes += 1
+        likedVideoObject.save()
+ 
+        return HttpResponse("video Liked Successfully")
+    
+    return HttpResponse("Error ! something went wrong :(")
+ 
+
+# To increment View Count
+@csrf_exempt  # to avoid csrf forbiden verification error
+def viewVideo(request):
+    if request.method == "POST":
+        sno = request.POST.get('videoId')
+        viewedVideoObject = VideoData.objects.get(sno=sno) 
+        viewedVideoObject.video_views += 1
+        viewedVideoObject.save()
+ 
+        return HttpResponse("video view count increased Successfully")
+    
+    return HttpResponse("Error ! something went wrong :(")
+
+
+# To increment Video Report Count
+@csrf_exempt  # to avoid csrf forbiden verification error
+def reportVideo(request):
+    if request.method == "POST":
+        sno = request.POST.get('videoId')
+        reportedVideoObject = VideoData.objects.get(sno=sno) 
+        reportedVideoObject.video_report_count += 1
+        reportedVideoObject.save()
+ 
+        return HttpResponse("video Reported Successfully")
+    
+    return HttpResponse("Error ! something went wrong :(")
