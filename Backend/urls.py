@@ -22,6 +22,7 @@ from api import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', views.registerUser),
+    path('uploadVideo/',views.uploadVideo),
 ]
 
 urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
