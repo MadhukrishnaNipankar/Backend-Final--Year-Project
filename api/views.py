@@ -1,4 +1,3 @@
-from wsgiref.util import request_uri
 from django.http import HttpResponse
 
 # import models
