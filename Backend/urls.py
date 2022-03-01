@@ -22,6 +22,9 @@ from api import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', views.registerUser),
+    path('register/', views.registerUser),
+    path('loginUser/', views.loginUser),
+    path('logoutUser/', views.logoutUser),
     path('uploadVideo/',views.uploadVideo),
     path('likeVideo/',views.likeVideo),
     path('viewVideo/',views.viewVideo),   

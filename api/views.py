@@ -1,12 +1,14 @@
+from wsgiref.util import request_uri
 from django.http import HttpResponse
 
- # import models
+# import models
 from .models import UserProfilePhoto 
 from .models import VideoData
 
+from django.contrib.auth.models import User 
+from django.contrib.auth  import authenticate, login, logout
 
-# for handling duplicate username exception
-from django.db import IntegrityError
+from django.db import IntegrityError # for handling duplicate username exception   
 from django.contrib.auth.models import User  # for user creation
 from django.views.decorators.csrf import csrf_exempt  # for csrf verification
 
@@ -40,6 +42,35 @@ def registerUser(request):
         except IntegrityError:
             return HttpResponse("username :  '"+userName+"'  is already taken. " + "please try another one")
 
+#For Logging User In
+@csrf_exempt  # to avoid csrf forbiden verification error
+def loginUser(request):
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            return HttpResponse("you are already logged in")
+        else:
+            userName = request.POST.get('username')
+            password = request.POST.get('password')
+            # Authenticating user
+            user=authenticate(request,username=userName, password=password)
+       
+            if user is not None:
+               login(request, user)
+               return HttpResponse("Logged In Successfully")
+            else:
+               return HttpResponse("Incorrect Credentials")
+    
+    return HttpResponse("Error : POST request Needed")
+ 
+#For User Logout
+@csrf_exempt  # to avoid csrf forbiden verification error
+def logoutUser(request):
+    if request.method == "POST":
+         if request.user.is_authenticated:
+                    logout(request)    
+                    return HttpResponse("Logged out successfully")    
+         return HttpResponse("you are not logged in")
+    return HttpResponse("Error : POST request Needed")
 
 # To Upload Video Data
 @csrf_exempt  # to avoid csrf forbiden verification error
@@ -60,7 +91,6 @@ def uploadVideo(request):
     
     return HttpResponse("Error ! Please try again !")
 
-
 # To increment Like Count
 @csrf_exempt  # to avoid csrf forbiden verification error
 def likeVideo(request):
@@ -74,7 +104,6 @@ def likeVideo(request):
     
     return HttpResponse("Error ! something went wrong :(")
  
-
 # To increment View Count
 @csrf_exempt  # to avoid csrf forbiden verification error
 def viewVideo(request):
@@ -87,7 +116,6 @@ def viewVideo(request):
         return HttpResponse("video view count increased Successfully")
     
     return HttpResponse("Error ! something went wrong :(")
-
 
 # To increment Video Report Count
 @csrf_exempt  # to avoid csrf forbiden verification error
