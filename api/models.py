@@ -12,11 +12,13 @@ class UserProfilePhoto(models.Model):
 #For Managing Video Data
 class VideoData(models.Model):
     sno = models.AutoField(primary_key=True)
-    video_title = models.TextField(max_length=1000)
-    video_desc = models.TextField(max_length=5000)
+    video_title = models.CharField(max_length=1000)
+    video_desc = models.CharField(max_length=5000)
+    video_keywords = models.CharField(max_length=4000,default="")
     video_likes = models.IntegerField(default=0)
     video_views = models.IntegerField(default=0)
     video_report_count = models.IntegerField(default=0)
+    video_thumbnail = models.ImageField(null=True,blank=True,upload_to="thumbnailPhotos")
     video_file = models.FileField(upload_to="videoFiles",null=False)
     notes_file = models.FileField(upload_to="notesFiles",null=True)
     timestamp = models.DateTimeField(default=now)
