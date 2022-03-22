@@ -1,8 +1,13 @@
+from urllib import request
 from django.http import HttpResponse
+from urllib3 import Retry
+
 
 # import models
-from .models import UserProfilePhoto 
+from .models import EmailVerificationStatus, UserProfilePhoto 
 from .models import VideoData
+from .models import OTP
+
 
 from django.contrib.auth.models import User 
 from django.contrib.auth  import authenticate, login, logout
@@ -10,6 +15,12 @@ from django.contrib.auth  import authenticate, login, logout
 from django.db import IntegrityError # for handling duplicate username exception   
 from django.contrib.auth.models import User  # for user creation
 from django.views.decorators.csrf import csrf_exempt  # for csrf verification
+
+# simple mail transfer protocol - for sending emails
+import smtplib 
+# for random number generation
+import random
+
 
 # For Registering a New User
 @csrf_exempt  # to avoid csrf forbideen verification error
@@ -36,10 +47,50 @@ def registerUser(request):
             #Saving the User Object
             userObject.save()
 
+
+            #For Sending OTP for Email Verification 
+            random_num = random.randint(10000,99000) # it will generate random number of length-5
+            otp = random_num
+
+            # saving otp to otp Table
+            otp_entry = OTP(otp=otp,user=userObject)
+            otp_entry.save()
+
+
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login('developerus.community@gmail.com', 'DeveloperTeam')
+            server.sendmail("developerus.community@gmail.com",email,"Subject : One Time Password(otp) : "+str(otp)+"\n\n"+"Dear "+userName+", Your OTP for Email Verification is : "+str(otp))
+           
             return HttpResponse("User Registered Successfully")
 
         except IntegrityError:
             return HttpResponse("username :  '"+userName+"'  is already taken. " + "please try another one")
+
+    return HttpResponse("Error : POST request Needed")
+
+
+
+#For Email-OTP Verification
+@csrf_exempt
+def verifyEmail(request):
+   if request.method == "POST":
+       otpFromFrontend = request.POST.get('otp')
+       email = request.POST.get('email')
+
+       userObject = User.objects.get(email=email)
+       otpFromBackend = OTP.objects.get(user=userObject).otp
+      
+       if(str(otpFromFrontend) == str(otpFromBackend)):
+           emailverificationObject = EmailVerificationStatus(is_email_verified=True,user=userObject)
+           emailverificationObject.save()
+           return HttpResponse("Dear "+str(userObject.username)+" your email is verified successfully !")
+       else:
+           return HttpResponse("Invalid OTP")
+
+   return HttpResponse("POST request needed")
+    
+
 
 #For Logging User In
 @csrf_exempt  # to avoid csrf forbiden verification error
@@ -52,12 +103,18 @@ def loginUser(request):
             password = request.POST.get('password')
             # Authenticating user
             user=authenticate(request,username=userName, password=password)
-       
+
             if user is not None:
                login(request, user)
                return HttpResponse("Logged In Successfully")
             else:
-               return HttpResponse("Incorrect Credentials")
+               #Getting email from database , for sending security alert for bad credentials !
+                userEmail = User.objects.get(username=userName).email
+                server = smtplib.SMTP('smtp.gmail.com', 587)
+                server.starttls()
+                server.login('developerus.community@gmail.com', 'DeveloperTeam')
+                server.sendmail("developerus.community@gmail.com",userEmail,"Subject : Security Alert ! "+"\n\n"+"Dear "+userName+", someone just tried logging in your account with bad/wrong credentials! We hope that it was you.")
+                return HttpResponse("Incorrect Credentials")
     
     return HttpResponse("Error : POST request Needed")
  

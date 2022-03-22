@@ -9,7 +9,6 @@ class UserProfilePhoto(models.Model):
     profile_pic = models.ImageField(null=True,blank=True,upload_to="profilePhotos")
     user = models.ForeignKey(User,on_delete=models.CASCADE) # associated with an user
 
-
 #For Managing Video Data
 class VideoData(models.Model):
     sno = models.AutoField(primary_key=True)
@@ -23,7 +22,17 @@ class VideoData(models.Model):
     timestamp = models.DateTimeField(default=now)
     user = models.ForeignKey(User,on_delete=models.CASCADE) # associated with an user
 
+class OTP(models.Model):
+    otp = models.IntegerField()
+    user = models.ForeignKey(User,on_delete=models.CASCADE) # associated with an user
 
+class EmailVerificationStatus(models.Model):
+    is_email_verified = models.BooleanField(default=False)
+    user = models.ForeignKey(User,on_delete=models.CASCADE) # associated with an user
+
+
+
+     
 
 
    
