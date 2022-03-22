@@ -30,6 +30,7 @@ urlpatterns = [
     path('viewVideo/',views.viewVideo),   
     path('reportVideo/',views.reportVideo),
     path('verifyEmail/',views.verifyEmail),
+    path('searchVideo/',views.searchVideo),
 ]
 
 urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
