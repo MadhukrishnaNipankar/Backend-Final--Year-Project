@@ -29,6 +29,7 @@ urlpatterns = [
     path('likeVideo/',views.likeVideo),
     path('viewVideo/',views.viewVideo),   
     path('reportVideo/',views.reportVideo),
+    path('verifyEmail/',views.verifyEmail),
 ]
 
 urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
