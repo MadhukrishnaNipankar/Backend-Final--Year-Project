@@ -1,0 +1,12 @@
+1.User Registration 
+2.Email Verification with OTP
+3.Login user + sending homepage data to frontend(if login successfull)
+4.Upload Video
+5.Like Video
+6. View Video
+7. Report Video
+8. Search Video
+9. Add video to bookmark
+10. Get Bookmarked videos of a particular user
+11. Maintain User History
+12. Get User History Data

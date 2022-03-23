@@ -31,6 +31,12 @@ urlpatterns = [
     path('reportVideo/',views.reportVideo),
     path('verifyEmail/',views.verifyEmail),
     path('searchVideo/',views.searchVideo),
+    path('addToHistory/',views.addToHistory),
+    path('addToBookmark/',views.addToBookmark),
+    path('getUserHistory/',views.getUserHistory),
+    path('getUserBookmark/',views.getUserBookmark),
+
+    
 ]
 
 urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

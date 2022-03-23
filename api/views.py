@@ -1,4 +1,5 @@
 # for httpresponse
+from urllib import response
 from django.http import HttpResponse
 
 #for serialization
@@ -14,6 +15,8 @@ from rest_framework.parsers import JSONParser
 from .models import EmailVerificationStatus, UserProfilePhoto
 from .models import VideoData
 from .models import OTP
+from . models import History
+from .models import Bookmark
 
 
 from django.contrib.auth.models import User
@@ -79,7 +82,6 @@ def registerUser(request):
 
     return HttpResponse("Error : POST request Needed")
 
-
 # For Email-OTP Verification
 @csrf_exempt
 def verifyEmail(request):
@@ -99,8 +101,6 @@ def verifyEmail(request):
             return HttpResponse("Invalid OTP")
 
     return HttpResponse("POST request needed")
-
-
 # For Logging User In
 @csrf_exempt  # to avoid csrf forbiden verification error
 def loginUser(request):
@@ -141,8 +141,6 @@ def loginUser(request):
     return HttpResponse("Error : POST request Needed")
 
 # For User Logout
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def logoutUser(request):
     if request.method == "POST":
@@ -153,8 +151,6 @@ def logoutUser(request):
     return HttpResponse("Error : POST request Needed")
 
 # To Upload Video Data
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def uploadVideo(request):
     if request.method == "POST":
@@ -177,8 +173,6 @@ def uploadVideo(request):
     return HttpResponse("Error ! Please try again !")
 
 # To increment Like Count
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def likeVideo(request):
     if request.method == "POST":
@@ -190,7 +184,6 @@ def likeVideo(request):
         return HttpResponse("video Liked Successfully")
 
     return HttpResponse("Error ! something went wrong :(")
-
 
 # To increment View Count
 @csrf_exempt  # to avoid csrf forbiden verification error
@@ -206,8 +199,6 @@ def viewVideo(request):
     return HttpResponse("Error ! something went wrong :(")
 
 # To increment Video Report Count
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def reportVideo(request):
     if request.method == "POST":
@@ -220,6 +211,127 @@ def reportVideo(request):
 
     return HttpResponse("Error ! something went wrong :(")
 
+#to add a video to History section
+@csrf_exempt  # to avoid csrf forbiden verification error
+def addToHistory(request):
+    #an id and email is expected while adding a video to the history 
+    if request.method == "POST":
+       json_data = request.body
+       stream = io.BytesIO(json_data)
+       parsed_data = JSONParser().parse(stream)
+       video_id = parsed_data.get('sno')
+       email = parsed_data.get('email')
+
+       userObject = User.objects.get(email=email)     
+       HistoryObject = History(video_id=video_id,user=userObject)
+       HistoryObject.save()
+
+       message = {
+                     "response": "added video to history successfully !",
+                     "status":200
+                 }
+       json_data = JSONRenderer().render(message)
+       return HttpResponse(json_data,content_type='application/json')
+    
+    message = {
+                     "response": "POST request needed",
+                     "status":404
+                 }
+    json_data = JSONRenderer().render(message)   
+    return HttpResponse(json_data,content_type='application/json')  
+
+#to get user history data
+@csrf_exempt  # to avoid csrf forbiden verification error
+def getUserHistory(request):
+    #only email is required to know user history
+    if request.method == "POST":
+       json_data = request.body
+       stream = io.BytesIO(json_data)
+       parsed_data = JSONParser().parse(stream)
+       email = parsed_data.get('email')
+
+       userObject = User.objects.get(email=email)     
+       HistoryObjects = History.objects.filter(user=userObject)
+
+       responseobject = {"status":200,
+                           "response":[]
+                           }
+       for historyItem in HistoryObjects:
+           VideoObject = VideoData.objects.get(sno=historyItem.video_id)
+           serializer = VideoDataSerializer(VideoObject)
+           responseobject["response"].append(serializer.data)  
+
+
+       json_data = JSONRenderer().render(responseobject)
+       return HttpResponse(json_data,content_type='application/json')
+    
+    message = {
+                     "response": "POST request needed",
+                     "status":404
+                 }
+    json_data = JSONRenderer().render(message)   
+    return HttpResponse(json_data,content_type='application/json')  
+
+#to add a video to Bookmark section
+@csrf_exempt  # to avoid csrf forbiden verification error
+def addToBookmark(request):
+    #an id and email is expected while adding a video to the Bookmark 
+    if request.method == "POST":
+       json_data = request.body
+       stream = io.BytesIO(json_data)
+       parsed_data = JSONParser().parse(stream)
+       video_id = parsed_data.get('sno')
+       email = parsed_data.get('email')
+
+       userObject = User.objects.get(email=email)     
+       BookmarkObject =Bookmark(video_id=video_id,user=userObject)
+       BookmarkObject.save()
+
+       message = {
+                     "response": "added video to Bookmark successfully !",
+                     "status":200
+                 }
+       json_data = JSONRenderer().render(message)
+       return HttpResponse(json_data,content_type='application/json')
+    
+    message = {
+                     "response": "POST request needed",
+                     "status":404
+                 }
+    json_data = JSONRenderer().render(message)   
+    return HttpResponse(json_data,content_type='application/json')  
+
+#to get user Bookmark data
+@csrf_exempt  # to avoid csrf forbiden verification error
+def getUserBookmark(request):
+    #only email is required to know user history
+    if request.method == "POST":
+       json_data = request.body
+       stream = io.BytesIO(json_data)
+       parsed_data = JSONParser().parse(stream)
+       email = parsed_data.get('email')
+
+       userObject = User.objects.get(email=email)     
+       BookmarkObjects = Bookmark.objects.filter(user=userObject)
+
+       responseobject = {"status":200,
+                           "response":[]
+                           }
+       for bookmarkItem in BookmarkObjects:
+           VideoObject = VideoData.objects.get(sno=bookmarkItem.video_id)
+           serializer = VideoDataSerializer(VideoObject)
+           responseobject["response"].append(serializer.data)  
+
+
+       json_data = JSONRenderer().render(responseobject)
+       return HttpResponse(json_data,content_type='application/json')
+    
+    message = {
+                     "response": "POST request needed",
+                     "status":404
+                 }
+    json_data = JSONRenderer().render(message)   
+    return HttpResponse(json_data,content_type='application/json')  
 
 #THIS WILL BE IMPROVED MORE IN FUTURE
 @csrf_exempt  # to avoid csrf forbiden verification error
