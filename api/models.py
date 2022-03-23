@@ -32,9 +32,13 @@ class EmailVerificationStatus(models.Model):
     is_email_verified = models.BooleanField(default=False)
     user = models.ForeignKey(User,on_delete=models.CASCADE) # associated with an user
 
+class History(models.Model):
+     video_id = models.IntegerField()
+     user = models.ForeignKey(User,on_delete=models.CASCADE) # associated with an user
 
-
-     
+class Bookmark(models.Model):
+     video_id = models.IntegerField()
+     user = models.ForeignKey(User,on_delete=models.CASCADE) # associated with an user                 
 
 
    
