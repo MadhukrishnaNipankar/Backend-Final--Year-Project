@@ -79,7 +79,6 @@ def registerUser(request):
 
         except IntegrityError:
             return HttpResponse("username :  '"+userName+"'  is already taken. " + "please try another one")
-
     return HttpResponse("Error : POST request Needed")
 
 # For Email-OTP Verification
@@ -101,6 +100,7 @@ def verifyEmail(request):
             return HttpResponse("Invalid OTP")
 
     return HttpResponse("POST request needed")
+
 # For Logging User In
 @csrf_exempt  # to avoid csrf forbiden verification error
 def loginUser(request):
@@ -168,48 +168,108 @@ def uploadVideo(request):
                                     notes_file=notes_file, video_thumbnail=video_thumbnail, user=userObject)
         videoDataObject.save()
 
-        return HttpResponse("Video Uploaded Successfully")
+        responseObject = {
+             "status":200,
+             "response":"Video uploaded Successfully"
+         }
 
-    return HttpResponse("Error ! Please try again !")
+        json_data = JSONRenderer().render(responseObject)
+        return HttpResponse(json_data,content_type='application/json')
+
+    responseObject = {
+             "status":404,
+             "response":"POST request needed"
+         }
+
+    json_data = JSONRenderer().render(responseObject)
+    return HttpResponse(json_data,content_type='application/json')
 
 # To increment Like Count
 @csrf_exempt  # to avoid csrf forbiden verification error
 def likeVideo(request):
     if request.method == "POST":
-        sno = request.POST.get('videoId')
-        likedVideoObject = VideoData.objects.get(sno=sno)
-        likedVideoObject.video_likes += 1
-        likedVideoObject.save()
+         json_data = request.body
+         stream = io.BytesIO(json_data)
+         parsed_data = JSONParser().parse(stream)
+         video_id = parsed_data.get('sno')
 
-        return HttpResponse("video Liked Successfully")
+         likedVideoObject = VideoData.objects.get(sno=video_id)
+         likedVideoObject.video_likes += 1
+         likedVideoObject.save()
 
-    return HttpResponse("Error ! something went wrong :(")
+         responseObject = {
+             "status":200,
+             "response":"Video Liked Successfully"
+         }
+
+         json_data = JSONRenderer().render(responseObject)
+         return HttpResponse(json_data,content_type='application/json')
+
+    responseObject = {
+             "status":404,
+             "response":"POST Request was expected !"
+         }
+
+    json_data = JSONRenderer().render(responseObject)
+    return HttpResponse(json_data,content_type='application/json')
 
 # To increment View Count
 @csrf_exempt  # to avoid csrf forbiden verification error
 def viewVideo(request):
     if request.method == "POST":
-        sno = request.POST.get('videoId')
-        viewedVideoObject = VideoData.objects.get(sno=sno)
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        video_id = parsed_data.get('sno')
+
+        viewedVideoObject = VideoData.objects.get(sno=video_id)
         viewedVideoObject.video_views += 1
         viewedVideoObject.save()
+  
+        responseObject = {
+             "status":200,
+             "response":"Video view count increased Successfully"
+         }
 
-        return HttpResponse("video view count increased Successfully")
+        json_data = JSONRenderer().render(responseObject)
+        return HttpResponse(json_data,content_type='application/json')
+    
+    responseObject = {
+             "status":404,
+             "response":"POST request was expected"
+         }
 
-    return HttpResponse("Error ! something went wrong :(")
+    json_data = JSONRenderer().render(responseObject)
+    return HttpResponse(json_data,content_type='application/json')
 
 # To increment Video Report Count
 @csrf_exempt  # to avoid csrf forbiden verification error
 def reportVideo(request):
     if request.method == "POST":
-        sno = request.POST.get('videoId')
-        reportedVideoObject = VideoData.objects.get(sno=sno)
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        video_id = parsed_data.get('sno')
+
+        reportedVideoObject = VideoData.objects.get(sno=video_id)
         reportedVideoObject.video_report_count += 1
         reportedVideoObject.save()
+ 
+        responseObject = {
+             "status":200,
+             "response":"Video reported Successfully"
+         }
 
-        return HttpResponse("video Reported Successfully")
+        json_data = JSONRenderer().render(responseObject)
+        return HttpResponse(json_data,content_type='application/json')
 
-    return HttpResponse("Error ! something went wrong :(")
+    responseObject = {
+             "status":404,
+             "response":"POST Request was expected !"
+         }
+
+    json_data = JSONRenderer().render(responseObject)
+    return HttpResponse(json_data,content_type='application/json')
 
 #to add a video to History section
 @csrf_exempt  # to avoid csrf forbiden verification error
