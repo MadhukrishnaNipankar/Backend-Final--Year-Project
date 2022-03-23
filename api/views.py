@@ -191,9 +191,8 @@ def likeVideo(request):
 
     return HttpResponse("Error ! something went wrong :(")
 
+
 # To increment View Count
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def viewVideo(request):
     if request.method == "POST":
@@ -222,7 +221,7 @@ def reportVideo(request):
     return HttpResponse("Error ! something went wrong :(")
 
 
-#THIS WORK IS IN PROGRESS.....
+#THIS WILL BE IMPROVED MORE IN FUTURE
 @csrf_exempt  # to avoid csrf forbiden verification error
 def searchVideo(request):
     if request.method == "POST":
@@ -231,13 +230,29 @@ def searchVideo(request):
        parsed_data = JSONParser().parse(stream)
        search_string = parsed_data.get('search_string')
 
-       VideoDataObjects = VideoData.objects.all().values() #contain all the video data objects in a list format
+       if len(search_string) > 80:
+            return HttpResponse("search query must be less than 80 characters")
+       else:     
+            VideoDataObjectsByTitle = VideoData.objects.filter(video_title__icontains=search_string)
+            VideoDataObjectsByDesc = VideoData.objects.filter(video_desc__icontains=search_string)
+            VideoDataObjectsByKeywords = VideoData.objects.filter(video_keywords__icontains=search_string)  
+            
+            AllVideoDataObjects = VideoDataObjectsByTitle.union(VideoDataObjectsByDesc,VideoDataObjectsByKeywords)
 
-       VideoSearchResultList = []
-       for videoObject in VideoDataObjects:
-           if(search_string in videoObject["video_title"] or search_string in videoObject["video_desc"] or search_string in videoObject["video_keywords"]):    
-              VideoSearchResultList.append(videoObject)
-       
-       print(VideoSearchResultList)       
-       
-    return HttpResponse("searched success")
+            if AllVideoDataObjects.count() == 0:
+                 message = {
+                     "response": "No result found",
+                     "status":404
+                 }
+                 json_data = JSONRenderer().render(message)
+                 return HttpResponse(json_data,content_type='application/json')
+            else:
+                serializer = VideoDataSerializer(AllVideoDataObjects,many=True)
+                json_data = JSONRenderer().render(serializer.data)
+
+                #returning the filtered searched json_video_data
+                return HttpResponse(json_data,content_type='application/json')
+   
+    json_data = JSONRenderer().render({"response":"POST Request Needed"})            
+    return HttpResponse(json_data,content_type='application/json')
+    

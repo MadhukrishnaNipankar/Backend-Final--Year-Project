@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 class VideoDataSerializer(serializers.Serializer):
+    sno = serializers.IntegerField() 
     video_title = serializers.CharField(max_length=1000)
     video_desc = serializers.CharField(max_length=5000)
     video_keywords = serializers.CharField(max_length=4000,default="")
