@@ -69,11 +69,11 @@ def registerUser(request):
             otp_entry.save()
 
             # sending email
-            server = smtplib.SMTP('smtp.gmail.com', 587)
-            server.starttls()
-            server.login('developerus.community@gmail.com', 'DeveloperTeam')
-            server.sendmail("developerus.community@gmail.com", email, "Subject : One Time Password(otp) : " +
-                            str(otp)+"\n\n"+"Dear "+userName+", Your OTP for Email Verification is : "+str(otp))
+            # server = smtplib.SMTP('smtp.gmail.com', 587)
+            # server.starttls()
+            # server.login('developerus.community@gmail.com', 'DeveloperTeam')
+            # server.sendmail("developerus.community@gmail.com", email, "Subject : One Time Password(otp) : " +
+            #                 str(otp)+"\n\n"+"Dear "+userName+", Your OTP for Email Verification is : "+str(otp))
 
             return HttpResponse("User Registered Successfully")
 
