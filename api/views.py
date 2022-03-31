@@ -28,7 +28,7 @@ from django.contrib.auth.models import User  # for user creation
 from django.views.decorators.csrf import csrf_exempt  # for csrf verification
 
 # simple mail transfer protocol - for sending emails
-import smtplib
+# import smtplib
 # for random number generation
 import random
 
