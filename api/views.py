@@ -2,12 +2,12 @@
 from urllib import response
 from django.http import HttpResponse
 
-#for serialization
+# for serialization
 from django.shortcuts import render
 from .serializers import VideoDataSerializer
 from rest_framework.renderers import JSONRenderer
 
-#for DeSerialization
+# for DeSerialization
 import io
 from rest_framework.parsers import JSONParser
 
@@ -27,8 +27,8 @@ from django.db import IntegrityError
 from django.contrib.auth.models import User  # for user creation
 from django.views.decorators.csrf import csrf_exempt  # for csrf verification
 
-# simple mail transfer protocol - for sending emails
-# import smtplib
+# for sending emails
+from django.core.mail import send_mail
 # for random number generation
 import random
 
@@ -75,6 +75,18 @@ def registerUser(request):
             # server.sendmail("developerus.community@gmail.com", email, "Subject : One Time Password(otp) : " +
             #                 str(otp)+"\n\n"+"Dear "+userName+", Your OTP for Email Verification is : "+str(otp))
 
+            otp_mesg = 'Dear '+userName + \
+                ', your One Time Password for verifying the email ' + \
+                email+', is '+str(otp)
+
+            send_mail(
+                'Team LearnoScope - OTP FOR EMAIL VERIFICATION',
+                otp_mesg,
+                'developerus.community@gmail.com',
+                [email],
+                fail_silently=False,
+            )
+
             return HttpResponse("User Registered Successfully")
 
         except IntegrityError:
@@ -82,6 +94,8 @@ def registerUser(request):
     return HttpResponse("Error : POST request Needed")
 
 # For Email-OTP Verification
+
+
 @csrf_exempt
 def verifyEmail(request):
     if request.method == "POST":
@@ -102,6 +116,8 @@ def verifyEmail(request):
     return HttpResponse("POST request needed")
 
 # For Logging User In
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def loginUser(request):
     if request.method == "POST":
@@ -117,30 +133,42 @@ def loginUser(request):
             user = authenticate(request, username=userName, password=password)
 
             if user is not None:
-                #for successfull login
+                # for successfull login
                 login(request, user)
 
-                #making json video data 
+                # making json video data
                 videoDataObject = VideoData.objects.all()
-                serializer = VideoDataSerializer(videoDataObject,many=True)
+                serializer = VideoDataSerializer(videoDataObject, many=True)
                 json_data = JSONRenderer().render(serializer.data)
 
-                #returning json_video_data
-                return HttpResponse(json_data,content_type='application/json')
+                # returning json_video_data
+                return HttpResponse(json_data, content_type='application/json')
             else:
                 # Getting email from database , for sending security alert for bad credentials !
                 userEmail = User.objects.get(username=userName).email
-                server = smtplib.SMTP('smtp.gmail.com', 587)
-                server.starttls()
-                server.login('developerus.community@gmail.com',
-                             'DeveloperTeam')
-                server.sendmail("developerus.community@gmail.com", userEmail, "Subject : Security Alert ! "+"\n\n"+"Dear " +
-                                userName+", someone just tried logging in your account with bad/wrong credentials! We hope that it was you.")
+                # server = smtplib.SMTP('smtp.gmail.com', 587)
+                # server.starttls()
+                # server.login('developerus.community@gmail.com',
+                #              'DeveloperTeam')
+                # server.sendmail("developerus.community@gmail.com", userEmail, "Subject : Security Alert ! "+"\n\n"+"Dear " +
+                #                 userName+", someone just tried logging in your account with bad/wrong credentials! We hope that it was you.")
+                email_mesg = "Security Alert !"+"\n\n"+"Dear "+userName + \
+                    ", someone just tried logging in your account with bad/wrong credentials! We hope that it was you."
+                send_mail(
+                    'Team LearnoScope - OTP FOR EMAIL VERIFICATION',
+                    email_mesg,
+                    'developerus.community@gmail.com',
+                    [userEmail],
+                    fail_silently=False,
+                )
+
                 return HttpResponse("Incorrect Credentials")
 
     return HttpResponse("Error : POST request Needed")
 
 # For User Logout
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def logoutUser(request):
     if request.method == "POST":
@@ -151,6 +179,8 @@ def logoutUser(request):
     return HttpResponse("Error : POST request Needed")
 
 # To Upload Video Data
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def uploadVideo(request):
     if request.method == "POST":
@@ -169,51 +199,55 @@ def uploadVideo(request):
         videoDataObject.save()
 
         responseObject = {
-             "status":200,
-             "response":"Video uploaded Successfully"
-         }
+            "status": 200,
+            "response": "Video uploaded Successfully"
+        }
 
         json_data = JSONRenderer().render(responseObject)
-        return HttpResponse(json_data,content_type='application/json')
+        return HttpResponse(json_data, content_type='application/json')
 
     responseObject = {
-             "status":404,
-             "response":"POST request needed"
-         }
+        "status": 404,
+        "response": "POST request needed"
+    }
 
     json_data = JSONRenderer().render(responseObject)
-    return HttpResponse(json_data,content_type='application/json')
+    return HttpResponse(json_data, content_type='application/json')
 
 # To increment Like Count
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def likeVideo(request):
     if request.method == "POST":
-         json_data = request.body
-         stream = io.BytesIO(json_data)
-         parsed_data = JSONParser().parse(stream)
-         video_id = parsed_data.get('sno')
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        video_id = parsed_data.get('sno')
 
-         likedVideoObject = VideoData.objects.get(sno=video_id)
-         likedVideoObject.video_likes += 1
-         likedVideoObject.save()
+        likedVideoObject = VideoData.objects.get(sno=video_id)
+        likedVideoObject.video_likes += 1
+        likedVideoObject.save()
 
-         responseObject = {
-             "status":200,
-             "response":"Video Liked Successfully"
-         }
+        responseObject = {
+            "status": 200,
+            "response": "Video Liked Successfully"
+        }
 
-         json_data = JSONRenderer().render(responseObject)
-         return HttpResponse(json_data,content_type='application/json')
+        json_data = JSONRenderer().render(responseObject)
+        return HttpResponse(json_data, content_type='application/json')
 
     responseObject = {
-             "status":404,
-             "response":"POST Request was expected !"
-         }
+        "status": 404,
+        "response": "POST Request was expected !"
+    }
 
     json_data = JSONRenderer().render(responseObject)
-    return HttpResponse(json_data,content_type='application/json')
+    return HttpResponse(json_data, content_type='application/json')
 
 # To increment View Count
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def viewVideo(request):
     if request.method == "POST":
@@ -225,24 +259,26 @@ def viewVideo(request):
         viewedVideoObject = VideoData.objects.get(sno=video_id)
         viewedVideoObject.video_views += 1
         viewedVideoObject.save()
-  
+
         responseObject = {
-             "status":200,
-             "response":"Video view count increased Successfully"
-         }
+            "status": 200,
+            "response": "Video view count increased Successfully"
+        }
 
         json_data = JSONRenderer().render(responseObject)
-        return HttpResponse(json_data,content_type='application/json')
-    
+        return HttpResponse(json_data, content_type='application/json')
+
     responseObject = {
-             "status":404,
-             "response":"POST request was expected"
-         }
+        "status": 404,
+        "response": "POST request was expected"
+    }
 
     json_data = JSONRenderer().render(responseObject)
-    return HttpResponse(json_data,content_type='application/json')
+    return HttpResponse(json_data, content_type='application/json')
 
 # To increment Video Report Count
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def reportVideo(request):
     if request.method == "POST":
@@ -254,177 +290,189 @@ def reportVideo(request):
         reportedVideoObject = VideoData.objects.get(sno=video_id)
         reportedVideoObject.video_report_count += 1
         reportedVideoObject.save()
- 
+
         responseObject = {
-             "status":200,
-             "response":"Video reported Successfully"
-         }
+            "status": 200,
+            "response": "Video reported Successfully"
+        }
 
         json_data = JSONRenderer().render(responseObject)
-        return HttpResponse(json_data,content_type='application/json')
+        return HttpResponse(json_data, content_type='application/json')
 
     responseObject = {
-             "status":404,
-             "response":"POST Request was expected !"
-         }
+        "status": 404,
+        "response": "POST Request was expected !"
+    }
 
     json_data = JSONRenderer().render(responseObject)
-    return HttpResponse(json_data,content_type='application/json')
+    return HttpResponse(json_data, content_type='application/json')
 
-#to add a video to History section
+# to add a video to History section
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def addToHistory(request):
-    #an id and email is expected while adding a video to the history 
+    # an id and email is expected while adding a video to the history
     if request.method == "POST":
-       json_data = request.body
-       stream = io.BytesIO(json_data)
-       parsed_data = JSONParser().parse(stream)
-       video_id = parsed_data.get('sno')
-       email = parsed_data.get('email')
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        video_id = parsed_data.get('sno')
+        email = parsed_data.get('email')
 
-       userObject = User.objects.get(email=email)     
-       HistoryObject = History(video_id=video_id,user=userObject)
-       HistoryObject.save()
+        userObject = User.objects.get(email=email)
+        HistoryObject = History(video_id=video_id, user=userObject)
+        HistoryObject.save()
 
-       message = {
-                     "response": "added video to history successfully !",
-                     "status":200
-                 }
-       json_data = JSONRenderer().render(message)
-       return HttpResponse(json_data,content_type='application/json')
-    
+        message = {
+            "response": "added video to history successfully !",
+            "status": 200
+        }
+        json_data = JSONRenderer().render(message)
+        return HttpResponse(json_data, content_type='application/json')
+
     message = {
-                     "response": "POST request needed",
-                     "status":404
-                 }
-    json_data = JSONRenderer().render(message)   
-    return HttpResponse(json_data,content_type='application/json')  
+        "response": "POST request needed",
+        "status": 404
+    }
+    json_data = JSONRenderer().render(message)
+    return HttpResponse(json_data, content_type='application/json')
 
-#to get user history data
+# to get user history data
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def getUserHistory(request):
-    #only email is required to know user history
+    # only email is required to know user history
     if request.method == "POST":
-       json_data = request.body
-       stream = io.BytesIO(json_data)
-       parsed_data = JSONParser().parse(stream)
-       email = parsed_data.get('email')
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        email = parsed_data.get('email')
 
-       userObject = User.objects.get(email=email)     
-       HistoryObjects = History.objects.filter(user=userObject)
+        userObject = User.objects.get(email=email)
+        HistoryObjects = History.objects.filter(user=userObject)
 
-       responseobject = {"status":200,
-                           "response":[]
-                           }
-       for historyItem in HistoryObjects:
-           VideoObject = VideoData.objects.get(sno=historyItem.video_id)
-           serializer = VideoDataSerializer(VideoObject)
-           responseobject["response"].append(serializer.data)  
+        responseobject = {"status": 200,
+                          "response": []
+                          }
+        for historyItem in HistoryObjects:
+            VideoObject = VideoData.objects.get(sno=historyItem.video_id)
+            serializer = VideoDataSerializer(VideoObject)
+            responseobject["response"].append(serializer.data)
 
+        json_data = JSONRenderer().render(responseobject)
+        return HttpResponse(json_data, content_type='application/json')
 
-       json_data = JSONRenderer().render(responseobject)
-       return HttpResponse(json_data,content_type='application/json')
-    
     message = {
-                     "response": "POST request needed",
-                     "status":404
-                 }
-    json_data = JSONRenderer().render(message)   
-    return HttpResponse(json_data,content_type='application/json')  
+        "response": "POST request needed",
+        "status": 404
+    }
+    json_data = JSONRenderer().render(message)
+    return HttpResponse(json_data, content_type='application/json')
 
-#to add a video to Bookmark section
+# to add a video to Bookmark section
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def addToBookmark(request):
-    #an id and email is expected while adding a video to the Bookmark 
+    # an id and email is expected while adding a video to the Bookmark
     if request.method == "POST":
-       json_data = request.body
-       stream = io.BytesIO(json_data)
-       parsed_data = JSONParser().parse(stream)
-       video_id = parsed_data.get('sno')
-       email = parsed_data.get('email')
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        video_id = parsed_data.get('sno')
+        email = parsed_data.get('email')
 
-       userObject = User.objects.get(email=email)     
-       BookmarkObject =Bookmark(video_id=video_id,user=userObject)
-       BookmarkObject.save()
+        userObject = User.objects.get(email=email)
+        BookmarkObject = Bookmark(video_id=video_id, user=userObject)
+        BookmarkObject.save()
 
-       message = {
-                     "response": "added video to Bookmark successfully !",
-                     "status":200
-                 }
-       json_data = JSONRenderer().render(message)
-       return HttpResponse(json_data,content_type='application/json')
-    
+        message = {
+            "response": "added video to Bookmark successfully !",
+            "status": 200
+        }
+        json_data = JSONRenderer().render(message)
+        return HttpResponse(json_data, content_type='application/json')
+
     message = {
-                     "response": "POST request needed",
-                     "status":404
-                 }
-    json_data = JSONRenderer().render(message)   
-    return HttpResponse(json_data,content_type='application/json')  
+        "response": "POST request needed",
+        "status": 404
+    }
+    json_data = JSONRenderer().render(message)
+    return HttpResponse(json_data, content_type='application/json')
 
-#to get user Bookmark data
+# to get user Bookmark data
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def getUserBookmark(request):
-    #only email is required to know user history
+    # only email is required to know user history
     if request.method == "POST":
-       json_data = request.body
-       stream = io.BytesIO(json_data)
-       parsed_data = JSONParser().parse(stream)
-       email = parsed_data.get('email')
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        email = parsed_data.get('email')
 
-       userObject = User.objects.get(email=email)     
-       BookmarkObjects = Bookmark.objects.filter(user=userObject)
+        userObject = User.objects.get(email=email)
+        BookmarkObjects = Bookmark.objects.filter(user=userObject)
 
-       responseobject = {"status":200,
-                           "response":[]
-                           }
-       for bookmarkItem in BookmarkObjects:
-           VideoObject = VideoData.objects.get(sno=bookmarkItem.video_id)
-           serializer = VideoDataSerializer(VideoObject)
-           responseobject["response"].append(serializer.data)  
+        responseobject = {"status": 200,
+                          "response": []
+                          }
+        for bookmarkItem in BookmarkObjects:
+            VideoObject = VideoData.objects.get(sno=bookmarkItem.video_id)
+            serializer = VideoDataSerializer(VideoObject)
+            responseobject["response"].append(serializer.data)
 
+        json_data = JSONRenderer().render(responseobject)
+        return HttpResponse(json_data, content_type='application/json')
 
-       json_data = JSONRenderer().render(responseobject)
-       return HttpResponse(json_data,content_type='application/json')
-    
     message = {
-                     "response": "POST request needed",
-                     "status":404
-                 }
-    json_data = JSONRenderer().render(message)   
-    return HttpResponse(json_data,content_type='application/json')  
+        "response": "POST request needed",
+        "status": 404
+    }
+    json_data = JSONRenderer().render(message)
+    return HttpResponse(json_data, content_type='application/json')
 
-#THIS WILL BE IMPROVED MORE IN FUTURE
+# THIS WILL BE IMPROVED MORE IN FUTURE
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def searchVideo(request):
     if request.method == "POST":
-       json_data = request.body
-       stream = io.BytesIO(json_data)
-       parsed_data = JSONParser().parse(stream)
-       search_string = parsed_data.get('search_string')
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        search_string = parsed_data.get('search_string')
 
-       if len(search_string) > 80:
+        if len(search_string) > 80:
             return HttpResponse("search query must be less than 80 characters")
-       else:     
-            VideoDataObjectsByTitle = VideoData.objects.filter(video_title__icontains=search_string)
-            VideoDataObjectsByDesc = VideoData.objects.filter(video_desc__icontains=search_string)
-            VideoDataObjectsByKeywords = VideoData.objects.filter(video_keywords__icontains=search_string)  
-            
-            AllVideoDataObjects = VideoDataObjectsByTitle.union(VideoDataObjectsByDesc,VideoDataObjectsByKeywords)
+        else:
+            VideoDataObjectsByTitle = VideoData.objects.filter(
+                video_title__icontains=search_string)
+            VideoDataObjectsByDesc = VideoData.objects.filter(
+                video_desc__icontains=search_string)
+            VideoDataObjectsByKeywords = VideoData.objects.filter(
+                video_keywords__icontains=search_string)
+
+            AllVideoDataObjects = VideoDataObjectsByTitle.union(
+                VideoDataObjectsByDesc, VideoDataObjectsByKeywords)
 
             if AllVideoDataObjects.count() == 0:
-                 message = {
-                     "response": "No result found",
-                     "status":404
-                 }
-                 json_data = JSONRenderer().render(message)
-                 return HttpResponse(json_data,content_type='application/json')
+                message = {
+                    "response": "No result found",
+                    "status": 404
+                }
+                json_data = JSONRenderer().render(message)
+                return HttpResponse(json_data, content_type='application/json')
             else:
-                serializer = VideoDataSerializer(AllVideoDataObjects,many=True)
+                serializer = VideoDataSerializer(
+                    AllVideoDataObjects, many=True)
                 json_data = JSONRenderer().render(serializer.data)
 
-                #returning the filtered searched json_video_data
-                return HttpResponse(json_data,content_type='application/json')
-   
-    json_data = JSONRenderer().render({"response":"POST Request Needed"})            
-    return HttpResponse(json_data,content_type='application/json')
-    
+                # returning the filtered searched json_video_data
+                return HttpResponse(json_data, content_type='application/json')
+
+    json_data = JSONRenderer().render({"response": "POST Request Needed"})
+    return HttpResponse(json_data, content_type='application/json')

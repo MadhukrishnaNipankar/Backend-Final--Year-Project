@@ -136,3 +136,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 #latest changes
 STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
+
+
+#for email
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = '587'
+EMAIL_HOST_USER = 'developerus.community@gmail.com'
+EMAIL_HOST_PASSWORD = 'DeveloperTeam'
+EMAIL_USE_TLS = True
