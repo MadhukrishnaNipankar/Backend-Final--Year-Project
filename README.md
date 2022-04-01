@@ -33,5 +33,13 @@
 >c. videoDesc      
 >d. keywords      
 >e. videoFile      
->f. thumbnail         
+>f. thumbnail    
+
+### 4. For Verifying Email by sending otp
+> API - https://developerus.herokuapp.com/verifyEmail/   
+> Request Type -  POST          
+> Way of Request -  USE Form Submission 
+> Necessary names for requested parameters -     
+>a. otp         
+>b. email        
                 
