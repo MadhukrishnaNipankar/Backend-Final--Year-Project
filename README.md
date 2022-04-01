@@ -6,7 +6,7 @@
 
 ### 1. For User Registration
 > API - https://developerus.herokuapp.com/register/   
-> Request Type -  POST          
+> Request Type -  POST               
 > Necessary names for requested parameters -     
 >a. username    
 >b. email         
@@ -17,7 +17,7 @@
                                        
 ### 2. For User Login
 > API - https://developerus.herokuapp.com/loginUser/   
-> Request Type -  POST          
+> Request Type -  POST               
 > Way of Request - USE Javascript (No Direct Form Submission)
 > Necessary names for requested parameters -     
 >a. username         
@@ -25,7 +25,7 @@
 
 ### 3. For Uploading Video
 > API - https://developerus.herokuapp.com/uploadVideo/   
-> Request Type -  POST   
+> Request Type -  POST        
 > Way of Request - USE Form Submission       
 > Necessary names for requested parameters -     
 >a. email    
@@ -37,7 +37,7 @@
 
 ### 4. For Verifying Email by sending otp
 > API - https://developerus.herokuapp.com/verifyEmail/   
-> Request Type -  POST          
+> Request Type -  POST               
 > Way of Request -  USE Form Submission 
 > Necessary names for requested parameters -     
 >a. otp         
@@ -45,7 +45,7 @@
 
 ### 5. To Like a Video
 > API - https://developerus.herokuapp.com/likeVideo/   
-> Request Type -  POST          
+> Request Type -  POST               
 > Way of Request -  USE Javascript (No Direct Form Submission)
 > Necessary names for requested parameters -     
 >a. sno         
@@ -53,7 +53,7 @@
 
 ### 6. To View a Video
 > API - https://developerus.herokuapp.com/viewVideo/   
-> Request Type -  POST          
+> Request Type -  POST               
 > Way of Request -  USE Javascript (No Direct Form Submission)
 > Necessary names for requested parameters -     
 >a. sno         
@@ -61,7 +61,7 @@
 
 ### 6. To Report a Video
 > API - https://developerus.herokuapp.com/reportVideo/   
-> Request Type -  POST          
+> Request Type -  POST               
 > Way of Request -  USE Javascript (No Direct Form Submission)
 > Necessary names for requested parameters -     
 >a. sno         
@@ -69,7 +69,7 @@
 
 ### 7. Add a video to Bookmark
 > API - https://developerus.herokuapp.com/addToBookmark/   
-> Request Type -  POST          
+> Request Type -  POST               
 > Way of Request -  USE Javascript (No Direct Form Submission)
 > Necessary names for requested parameters -     
 >a. sno         
@@ -77,7 +77,7 @@
 
 ### 8. Add a video to History
 > API - https://developerus.herokuapp.com/addToHistory/   
-> Request Type -  POST          
+> Request Type -  POST               
 > Way of Request -  USE Javascript (No Direct Form Submission)
 > Necessary names for requested parameters -     
 >a. sno         
@@ -85,14 +85,14 @@
 
 ### 8. Get User History
 > API - https://developerus.herokuapp.com/getUserHistory/   
-> Request Type -  POST          
+> Request Type -  POST               
 > Way of Request -  USE Javascript (No Direct Form Submission)
 > Necessary names for requested parameters -     
 >a.email     
 
 ### 8. Get User Bookmark
 > API - https://developerus.herokuapp.com/getUserBookmark/   
-> Request Type -  POST          
+> Request Type -  POST               
 > Way of Request -  USE Javascript (No Direct Form Submission)
 > Necessary names for requested parameters -     
 >a.email  
