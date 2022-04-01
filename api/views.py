@@ -46,7 +46,7 @@ def registerUser(request):
         profile_pic = request.FILES['profile_pic']  # profile_picture
 
         try:
-            #userObject = User.objects.create_user(username,email,password)
+            # userObject = User.objects.create_user(username,email,password)
             userObject = User.objects.create_user(userName, email, password)
             userObject.first_name = firstName
             userObject.last_name = lastName
@@ -130,14 +130,24 @@ def loginUser(request):
                 # for successfull login
                 login(request, user)
 
-                # making json video data
-                videoDataObject = VideoData.objects.all()
-                serializer = VideoDataSerializer(videoDataObject, many=True)
-                json_data = JSONRenderer().render(serializer.data)
+                responseObject = {
+                    "status": 200,
+                    "response": userName+", your login was successfull"
+                }
 
-                # returning json_video_data
+                json_data = JSONRenderer().render(responseObject)
+
+                # returning response
                 return HttpResponse(json_data, content_type='application/json')
             else:
+
+                responseObject = {
+                    "status": 404,
+                    "response": "Login Failed ! Bad Credentials"
+                }
+
+                json_data = JSONRenderer().render(responseObject)
+
                 # Getting email from database , for sending security alert for bad credentials !
                 userEmail = User.objects.get(username=userName).email
 
@@ -152,7 +162,8 @@ def loginUser(request):
                     fail_silently=False,
                 )
 
-                return HttpResponse("Incorrect Credentials")
+                # returning response
+                return HttpResponse(json_data, content_type='application/json')
 
     return HttpResponse("Error : POST request Needed")
 
