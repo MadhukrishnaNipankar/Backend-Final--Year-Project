@@ -81,5 +81,19 @@
 > Way of Request -  USE Javascript (No Direct Form Submission)
 > Necessary names for requested parameters -     
 >a. sno         
->b. email 
+>b. email    
+
+### 8. Get User History
+> API - https://developerus.herokuapp.com/getUserHistory/   
+> Request Type -  POST          
+> Way of Request -  USE Javascript (No Direct Form Submission)
+> Necessary names for requested parameters -     
+>a.email     
+
+### 8. Get User History
+> API - https://developerus.herokuapp.com/getUserBookmark/   
+> Request Type -  POST          
+> Way of Request -  USE Javascript (No Direct Form Submission)
+> Necessary names for requested parameters -     
+>a.email  
                 
