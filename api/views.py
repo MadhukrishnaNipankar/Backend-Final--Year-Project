@@ -28,7 +28,7 @@ from django.contrib.auth.models import User  # for user creation
 from django.views.decorators.csrf import csrf_exempt  # for csrf verification
 
 # for sending emails
-# from django.core.mail import send_mail
+from django.core.mail import send_mail
 # for random number generation
 import random
 
@@ -68,24 +68,18 @@ def registerUser(request):
             otp_entry = OTP(otp=otp, user=userObject)
             otp_entry.save()
 
-            # sending email
-            # server = smtplib.SMTP('smtp.gmail.com', 587)
-            # server.starttls()
-            # server.login('developerus.community@gmail.com', 'DeveloperTeam')
-            # server.sendmail("developerus.community@gmail.com", email, "Subject : One Time Password(otp) : " +
-            #                 str(otp)+"\n\n"+"Dear "+userName+", Your OTP for Email Verification is : "+str(otp))
-
+            # sending otp via mail
             otp_mesg = 'Dear '+userName + \
                 ', your One Time Password for verifying the email ' + \
                 email+', is '+str(otp)
 
-            # send_mail(
-            #     'Team LearnoScope - OTP FOR EMAIL VERIFICATION',
-            #     otp_mesg,
-            #     'developerus.community@gmail.com',
-            #     [email],
-            #     fail_silently=False,
-            # )
+            send_mail(
+                'Team LearnoScope - OTP FOR EMAIL VERIFICATION',
+                otp_mesg,
+                'developerus.community@gmail.com',
+                [email],
+                fail_silently=False,
+            )
 
             return HttpResponse("User Registered Successfully")
 
@@ -146,21 +140,17 @@ def loginUser(request):
             else:
                 # Getting email from database , for sending security alert for bad credentials !
                 userEmail = User.objects.get(username=userName).email
-                # server = smtplib.SMTP('smtp.gmail.com', 587)
-                # server.starttls()
-                # server.login('developerus.community@gmail.com',
-                #              'DeveloperTeam')
-                # server.sendmail("developerus.community@gmail.com", userEmail, "Subject : Security Alert ! "+"\n\n"+"Dear " +
-                #                 userName+", someone just tried logging in your account with bad/wrong credentials! We hope that it was you.")
+
                 email_mesg = "Security Alert !"+"\n\n"+"Dear "+userName + \
                     ", someone just tried logging in your account with bad/wrong credentials! We hope that it was you."
-                # send_mail(
-                #     'Team LearnoScope - OTP FOR EMAIL VERIFICATION',
-                #     email_mesg,
-                #     'developerus.community@gmail.com',
-                #     [userEmail],
-                #     fail_silently=False,
-                # )
+
+                send_mail(
+                    'Team LearnoScope - OTP FOR EMAIL VERIFICATION',
+                    email_mesg,
+                    'developerus.community@gmail.com',
+                    [userEmail],
+                    fail_silently=False,
+                )
 
                 return HttpResponse("Incorrect Credentials")
 

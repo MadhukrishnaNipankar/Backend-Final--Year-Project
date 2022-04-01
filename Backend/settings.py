@@ -142,5 +142,5 @@ STATIC_URL = '/static/'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = '587'
 EMAIL_HOST_USER = 'developerus.community@gmail.com'
-EMAIL_HOST_PASSWORD = 'DeveloperTeam'
+EMAIL_HOST_PASSWORD = 'uwxgzfdcigzqxrrl'
 EMAIL_USE_TLS = True
