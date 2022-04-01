@@ -65,5 +65,21 @@
 > Way of Request -  USE Javascript (No Direct Form Submission)
 > Necessary names for requested parameters -     
 >a. sno         
+>b. email     
+
+### 7. Add a video to Bookmark
+> API - https://developerus.herokuapp.com/addToBookmark/   
+> Request Type -  POST          
+> Way of Request -  USE Javascript (No Direct Form Submission)
+> Necessary names for requested parameters -     
+>a. sno         
+>b. email  
+
+### 8. Add a video to History
+> API - https://developerus.herokuapp.com/addToHistory/   
+> Request Type -  POST          
+> Way of Request -  USE Javascript (No Direct Form Submission)
+> Necessary names for requested parameters -     
+>a. sno         
 >b. email 
                 
