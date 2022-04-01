@@ -21,5 +21,17 @@
 > Way of Request - USE Javascript (No Direct Form Submission)
 > Necessary names for requested parameters -     
 >a. username         
->b. password           
+>b. password    
+
+### 3. For Uploading Video
+> API - https://developerus.herokuapp.com/uploadVideo/   
+> Request Type -  POST   
+> Way of Request - USE Form Submission       
+> Necessary names for requested parameters -     
+>a. email    
+>b. videoTitle         
+>c. videoDesc      
+>d. keywords      
+>e. videoFile      
+>f. thumbnail         
                 
