@@ -28,7 +28,7 @@ from django.contrib.auth.models import User  # for user creation
 from django.views.decorators.csrf import csrf_exempt  # for csrf verification
 
 # for sending emails
-from django.core.mail import send_mail
+# from django.core.mail import send_mail
 # for random number generation
 import random
 
@@ -79,13 +79,13 @@ def registerUser(request):
                 ', your One Time Password for verifying the email ' + \
                 email+', is '+str(otp)
 
-            send_mail(
-                'Team LearnoScope - OTP FOR EMAIL VERIFICATION',
-                otp_mesg,
-                'developerus.community@gmail.com',
-                [email],
-                fail_silently=False,
-            )
+            # send_mail(
+            #     'Team LearnoScope - OTP FOR EMAIL VERIFICATION',
+            #     otp_mesg,
+            #     'developerus.community@gmail.com',
+            #     [email],
+            #     fail_silently=False,
+            # )
 
             return HttpResponse("User Registered Successfully")
 
@@ -154,13 +154,13 @@ def loginUser(request):
                 #                 userName+", someone just tried logging in your account with bad/wrong credentials! We hope that it was you.")
                 email_mesg = "Security Alert !"+"\n\n"+"Dear "+userName + \
                     ", someone just tried logging in your account with bad/wrong credentials! We hope that it was you."
-                send_mail(
-                    'Team LearnoScope - OTP FOR EMAIL VERIFICATION',
-                    email_mesg,
-                    'developerus.community@gmail.com',
-                    [userEmail],
-                    fail_silently=False,
-                )
+                # send_mail(
+                #     'Team LearnoScope - OTP FOR EMAIL VERIFICATION',
+                #     email_mesg,
+                #     'developerus.community@gmail.com',
+                #     [userEmail],
+                #     fail_silently=False,
+                # )
 
                 return HttpResponse("Incorrect Credentials")
 
