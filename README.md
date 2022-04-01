@@ -14,5 +14,12 @@
 >d. firstName      
 >e. lastName      
 >f. profile_pic       
->                                              
-> 
+                                       
+### 2. For User Login
+> API - https://developerus.herokuapp.com/loginUser/   
+> Request Type -  POST          
+> Way of Request - USE Javascript (No Direct Form Submission)
+> Necessary names for requested parameters -     
+>a. username         
+>b. password           
+                
