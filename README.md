@@ -95,5 +95,16 @@
 > Request Type -  POST               
 > Way of Request -  USE Javascript (No Direct Form Submission)     
 > Necessary names for requested parameters -     
->a.email  
+>a.email    
+
+### 8. Search a Particular Video
+> API - https://developerus.herokuapp.com/searchVideo/   
+> Request Type -  POST               
+> Way of Request -  USE Javascript (No Direct Form Submission)     
+> Necessary names for requested parameters -     
+>a.email 
+>b.search_string
+
+
+
                 
