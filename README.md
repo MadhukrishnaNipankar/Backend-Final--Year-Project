@@ -41,5 +41,29 @@
 > Way of Request -  USE Form Submission 
 > Necessary names for requested parameters -     
 >a. otp         
+>b. email   
+
+### 5. To Like a Video
+> API - https://developerus.herokuapp.com/likeVideo/   
+> Request Type -  POST          
+> Way of Request -  USE Javascript (No Direct Form Submission)
+> Necessary names for requested parameters -     
+>a. sno         
 >b. email        
+
+### 6. To View a Video
+> API - https://developerus.herokuapp.com/viewVideo/   
+> Request Type -  POST          
+> Way of Request -  USE Javascript (No Direct Form Submission)
+> Necessary names for requested parameters -     
+>a. sno         
+>b. email    
+
+### 6. To Report a Video
+> API - https://developerus.herokuapp.com/reportVideo/   
+> Request Type -  POST          
+> Way of Request -  USE Javascript (No Direct Form Submission)
+> Necessary names for requested parameters -     
+>a. sno         
+>b. email 
                 
