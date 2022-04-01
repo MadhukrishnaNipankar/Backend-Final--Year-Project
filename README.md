@@ -97,13 +97,13 @@
 > Necessary names for requested parameters -     
 >a.email    
 
-### 8. Search a Particular Video
+### 9. Search a Particular Video
 > API - https://developerus.herokuapp.com/searchVideo/   
 > Request Type -  POST               
 > Way of Request -  USE Javascript (No Direct Form Submission)     
 > Necessary names for requested parameters -     
->a.email 
->b.search_string
+>a.email      
+>b.search_string     
 
 
 
