@@ -35,6 +35,7 @@ urlpatterns = [
     path('addToBookmark/',views.addToBookmark),
     path('getUserHistory/',views.getUserHistory),
     path('getUserBookmark/',views.getUserBookmark),
+    path('deleteVideo/',views.deleteVideo),
     re_path(r'^media/(?P<path>.*)$',serve,{'document_root':settings.MEDIA_ROOT}),
 ]
     

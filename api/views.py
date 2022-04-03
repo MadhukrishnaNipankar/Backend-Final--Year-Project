@@ -465,3 +465,38 @@ def searchVideo(request):
 
     json_data = JSONRenderer().render({"response": "POST Request Needed"})
     return HttpResponse(json_data, content_type='application/json')
+
+
+#for deleting a video object
+@csrf_exempt  # to avoid csrf forbiden verification error
+def deleteVideo(request):
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            json_data = request.body
+            stream = io.BytesIO(json_data)
+            parsed_data = JSONParser().parse(stream)
+            video_id = parsed_data.get('sno')
+            
+            videoDataObject = VideoData.objects.get(sno=video_id)
+            videoDataObject.delete()
+
+            message = {
+                        "response": "Video Deleted Successfully",
+                        "status": 200
+                    }
+            json_data = JSONRenderer().render(message)
+            return HttpResponse(json_data, content_type='application/json')
+        
+        message = {"response": "You are not Logged in",
+                   "status": 404
+                  }
+        json_data = JSONRenderer().render(message)
+        return HttpResponse(json_data, content_type='application/json')     
+
+
+    message = {"response": "POST Request Needed",
+               "status": 404
+               }
+    json_data = JSONRenderer().render(message)
+    return HttpResponse(json_data, content_type='application/json')                     
+   
