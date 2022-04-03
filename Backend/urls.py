@@ -23,7 +23,6 @@ from django.views.static import serve
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', views.registerUser),
-    path('register/', views.registerUser),
     path('loginUser/', views.loginUser),
     path('logoutUser/', views.logoutUser),
     path('uploadVideo/',views.uploadVideo),
