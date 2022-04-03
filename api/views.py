@@ -1,5 +1,4 @@
-# for httpresponse
-from urllib import response
+
 from django.http import HttpResponse
 
 # for serialization
@@ -516,6 +515,26 @@ def deleteVideo(request):
     json_data = JSONRenderer().render(message)
     return HttpResponse(json_data, content_type='application/json')          
 
+
+@csrf_exempt  # to avoid csrf forbiden verification error
+def loginStatus(request):
+     if request.method == "POST":
+         if request.user.is_authenticated:
+             
+            message = {"response": "true",
+               "status": 200
+               }
+            json_data = JSONRenderer().render(message)
+            return HttpResponse(json_data, content_type='application/json')   
+
+         message = {"response": "false",
+               "status": 200
+               }
+         json_data = JSONRenderer().render(message)
+         return HttpResponse(json_data, content_type='application/json')            
+
+
+    
 
 
    
