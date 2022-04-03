@@ -24,8 +24,12 @@ from django.contrib.auth import authenticate, login, logout
 
 # for handling duplicate username exception
 from django.db import IntegrityError
-from django.contrib.auth.models import User  # for user creation
-from django.views.decorators.csrf import csrf_exempt  # for csrf verification
+#does not exist exception
+from django.core.exceptions import ObjectDoesNotExist
+# for user creation
+from django.contrib.auth.models import User  
+# for csrf verification
+from django.views.decorators.csrf import csrf_exempt  
 
 # for sending emails
 from django.core.mail import send_mail
@@ -45,47 +49,59 @@ def registerUser(request):
         firstName = request.POST.get('firstName')
         lastName = request.POST.get('lastName')
         profile_pic = request.FILES['profile_pic']  # profile_picture
-
+       
+        
+       # if user already exists return - "user already exists"
+       # else create the account 
         try:
-            # userObject = User.objects.create_user(username,email,password)
-            userObject = User.objects.create_user(userName, email, password)
-            userObject.first_name = firstName
-            userObject.last_name = lastName
+           userObject = User.objects.get(email=email)
+           responseObject = {
+                "status": 404,
+                "response": "The Email is already registered"
+            }
+           json_data = JSONRenderer().render(responseObject)
+           return HttpResponse(json_data, content_type='application/json')
+        except ObjectDoesNotExist:
+            try:
+                # userObject = User.objects.create_user(username,email,password)
+                userObject = User.objects.create_user(userName, email, password)
+                userObject.first_name = firstName
+                userObject.last_name = lastName
 
-            # saving profile_photo to UserProfilePhoto Table
-            profilePhoto = UserProfilePhoto(
-                profile_pic=profile_pic, user=userObject)
-            profilePhoto.save()
+                # saving profile_photo to UserProfilePhoto Table
+                profilePhoto = UserProfilePhoto(
+                    profile_pic=profile_pic, user=userObject)
+                profilePhoto.save()
 
-            # Saving the User Object
-            userObject.save()
+                # Saving the User Object
+                userObject.save()
 
-            # For Sending OTP for Email Verification
-            # it will generate random number of length-5
-            random_num = random.randint(10000, 99000)
-            otp = random_num
+                # For Sending OTP for Email Verification
+                # it will generate random number of length-5
+                random_num = random.randint(10000, 99000)
+                otp = random_num
 
-            # saving otp to otp Table
-            otp_entry = OTP(otp=otp, user=userObject)
-            otp_entry.save()
+                # saving otp to otp Table
+                otp_entry = OTP(otp=otp, user=userObject)
+                otp_entry.save()
 
-            # sending otp via mail
-            otp_mesg = 'Dear '+userName + \
-                ', your One Time Password for verifying the email ' + \
-                email+', is '+str(otp)
+                # sending otp via mail
+                otp_mesg = 'Dear '+userName + \
+                    ', your One Time Password for verifying the email ' + \
+                    email+', is '+str(otp)
 
-            send_mail(
-                'Team LearnoScope - OTP FOR EMAIL VERIFICATION',
-                otp_mesg,
-                'developerus.community@gmail.com',
-                [email],
-                fail_silently=False,
-            )
+                send_mail(
+                    'Team LearnoScope - OTP FOR EMAIL VERIFICATION',
+                    otp_mesg,
+                    'developerus.community@gmail.com',
+                    [email],
+                    fail_silently=False,
+                )
 
-            return HttpResponse("User Registered Successfully")
+                return HttpResponse("User Registered Successfully")
 
-        except IntegrityError:
-            return HttpResponse("username :  '"+userName+"'  is already taken. " + "please try another one")
+            except IntegrityError:
+                return HttpResponse("username :  '"+userName+"'  is already taken. " + "please try another one")
     return HttpResponse("Error : POST request Needed")
 
 # For Email-OTP Verification
@@ -498,5 +514,8 @@ def deleteVideo(request):
                "status": 404
                }
     json_data = JSONRenderer().render(message)
-    return HttpResponse(json_data, content_type='application/json')                     
+    return HttpResponse(json_data, content_type='application/json')          
+
+
+
    
