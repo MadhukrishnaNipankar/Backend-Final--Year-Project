@@ -39,6 +39,11 @@ class History(models.Model):
 class Bookmark(models.Model):
      video_id = models.IntegerField()
      user = models.ForeignKey(User,on_delete=models.CASCADE) # associated with an user      
+
+class LoginStatus(models.Model):
+      is_loggedin =  models.BooleanField(default=False)
+      user = models.ForeignKey(User,on_delete=models.CASCADE) # associated with an user
+
                    
 
 

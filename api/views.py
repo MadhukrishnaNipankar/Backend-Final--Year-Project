@@ -11,7 +11,7 @@ import io
 from rest_framework.parsers import JSONParser
 
 # import models
-from .models import EmailVerificationStatus, UserProfilePhoto
+from .models import EmailVerificationStatus, LoginStatus, UserProfilePhoto
 from .models import VideoData
 from .models import OTP
 from . models import History
@@ -19,7 +19,7 @@ from .models import Bookmark
 
 
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate
 
 # for handling duplicate username exception
 from django.db import IntegrityError
@@ -129,9 +129,6 @@ def verifyEmail(request):
 @csrf_exempt  # to avoid csrf forbiden verification error
 def loginUser(request):
     if request.method == "POST":
-        if request.user.is_authenticated:
-            return HttpResponse("you are already logged in")
-        else:
             json_data = request.body
             stream = io.BytesIO(json_data)
             parsed_data = JSONParser().parse(stream)
@@ -142,15 +139,14 @@ def loginUser(request):
 
             if user is not None:
                 # for successfull login
-                login(request, user)
-
+                userObject = User.objects.get(username = user)
+                Loginobj= LoginStatus(is_loggedin = True,user=userObject)
+                Loginobj.save()
                 responseObject = {
                     "status": 200,
                     "response": userName+", your login was successfull"
                 }
-
                 json_data = JSONRenderer().render(responseObject)
-
                 # returning response
                 return HttpResponse(json_data, content_type='application/json')
             else:
@@ -185,17 +181,24 @@ def loginUser(request):
 @csrf_exempt  # to avoid csrf forbiden verification error
 def logoutUser(request):
     if request.method == "POST":
-        if request.user.is_authenticated:
-            logout(request)
+            json_data = request.body
+            stream = io.BytesIO(json_data)
+            parsed_data = JSONParser().parse(stream)
+            email = parsed_data.get('email')
+
+            userObject = User.objects.get(email=email)
+            LoginStatusObject = LoginStatus.objects.get(user=userObject) 
+            LoginStatusObject.is_loggedin = False
+            LoginStatusObject.save()
+            
             return HttpResponse("Logged out successfully")
-        return HttpResponse("you are not logged in")
+       
     return HttpResponse("Error : POST request Needed")
 
 # To Upload Video Data
 @csrf_exempt  # to avoid csrf forbiden verification error
 def uploadVideo(request):
     if request.method == "POST":
-        if request.user.is_authenticated:
             email = request.POST.get('email')
             video_title = request.POST.get('videoTitle')
             video_desc = request.POST.get('videoDesc')
@@ -203,26 +206,35 @@ def uploadVideo(request):
             video_file = request.FILES['videoFile']
             notes_file = request.FILES['notesFile']
             video_thumbnail = request.FILES['thumbnail']
-
+      
             # getting the userObject according to email
             userObject = User.objects.get(email=email)
-            videoDataObject = VideoData(video_title=video_title, video_desc=video_desc, video_keywords=video_keywords, video_file=video_file,
-                                        notes_file=notes_file, video_thumbnail=video_thumbnail, user=userObject)
-            videoDataObject.save()
+            LoginStatusObject = LoginStatus.objects.get(user=userObject) 
+            if(LoginStatusObject.is_loggedin == True):
+                    videoDataObject = VideoData(video_title=video_title, video_desc=video_desc, video_keywords=video_keywords, video_file=video_file,
+                                                notes_file=notes_file, video_thumbnail=video_thumbnail, user=userObject)
+                    videoDataObject.save()
+
+                    responseObject = {
+                        "status": 200,
+                        "response": "Video uploaded Successfully"
+                    }
+
+                    json_data = JSONRenderer().render(responseObject)
+                    return HttpResponse(json_data, content_type='application/json')
 
             responseObject = {
-                "status": 200,
-                "response": "Video uploaded Successfully"
-            }
+            "status": 404,
+            "response": "You're not logged in"
+             }
 
             json_data = JSONRenderer().render(responseObject)
             return HttpResponse(json_data, content_type='application/json')
-
+   
     responseObject = {
         "status": 404,
         "response": "POST request needed"
     }
-
     json_data = JSONRenderer().render(responseObject)
     return HttpResponse(json_data, content_type='application/json')
 
@@ -481,7 +493,6 @@ def searchVideo(request):
     json_data = JSONRenderer().render({"response": "POST Request Needed"})
     return HttpResponse(json_data, content_type='application/json')
 
-
 #for deleting a video object
 @csrf_exempt  # to avoid csrf forbiden verification error
 def deleteVideo(request):
@@ -515,26 +526,25 @@ def deleteVideo(request):
     json_data = JSONRenderer().render(message)
     return HttpResponse(json_data, content_type='application/json')          
 
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def loginStatus(request):
-     if request.method == "POST":
-         if request.user.is_authenticated:
+    if request.method == "POST":
+            json_data = request.body
+            stream = io.BytesIO(json_data)
+            parsed_data = JSONParser().parse(stream)
+            email = parsed_data.get('email')
              
-            message = {"response": "true",
+            userObject = User.objects.get(email=email)
+            LoginStatusValue = LoginStatus.objects.get(user=userObject).is_loggedin
+            
+            message = {"response": LoginStatusValue,
                "status": 200
                }
             json_data = JSONRenderer().render(message)
             return HttpResponse(json_data, content_type='application/json')   
 
-         message = {"response": "false",
-               "status": 200
+    message = {"response": "POST request needed",
+               "status": 404
                }
-         json_data = JSONRenderer().render(message)
-         return HttpResponse(json_data, content_type='application/json')            
-
-
-    
-
-
-   
+    json_data = JSONRenderer().render(message)
+    return HttpResponse(json_data, content_type='application/json')     
