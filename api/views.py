@@ -36,9 +36,7 @@ from django.core.mail import send_mail
 import random
 
 # For Registering a New User
-
-
-@csrf_exempt  # to avoid csrf forbideen verification error
+@csrf_exempt  # to avoid csrf forbideen verification error @
 def registerUser(request):
     if request.method == "POST":
         # assuming that , this data is already verified
@@ -49,14 +47,14 @@ def registerUser(request):
         lastName = request.POST.get('lastName')
         profile_pic = request.FILES['profile_pic']  # profile_picture
        
-        
        # if user already exists return - "user already exists"
        # else create the account 
         try:
            userObject = User.objects.get(email=email)
+           
            responseObject = {
                 "status": 404,
-                "response": "The Email is already registered"
+                "response": "The Email is already registered ! Please try logging in"
             }
            json_data = JSONRenderer().render(responseObject)
            return HttpResponse(json_data, content_type='application/json')
@@ -66,14 +64,20 @@ def registerUser(request):
                 userObject = User.objects.create_user(userName, email, password)
                 userObject.first_name = firstName
                 userObject.last_name = lastName
-
+ 
                 # saving profile_photo to UserProfilePhoto Table
                 profilePhoto = UserProfilePhoto(
                     profile_pic=profile_pic, user=userObject)
                 profilePhoto.save()
 
+                
+                #setting default login status of user as "False" 
+                Loginobj= LoginStatus(is_loggedin = False,user=userObject)
+                Loginobj.save()
+
                 # Saving the User Object
                 userObject.save()
+
 
                 # For Sending OTP for Email Verification
                 # it will generate random number of length-5
@@ -103,9 +107,7 @@ def registerUser(request):
                 return HttpResponse("username :  '"+userName+"'  is already taken. " + "please try another one")
     return HttpResponse("Error : POST request Needed")
 
-# For Email-OTP Verification
-
-
+# For Email-OTP Verification @
 @csrf_exempt
 def verifyEmail(request):
     if request.method == "POST":
@@ -125,7 +127,7 @@ def verifyEmail(request):
 
     return HttpResponse("POST request needed")
 
-# For Logging User In
+# For Logging User In @
 @csrf_exempt  # to avoid csrf forbiden verification error
 def loginUser(request):
     if request.method == "POST":
@@ -140,8 +142,12 @@ def loginUser(request):
             if user is not None:
                 # for successfull login
                 userObject = User.objects.get(username = user)
-                Loginobj= LoginStatus(is_loggedin = True,user=userObject)
-                Loginobj.save()
+                
+                #for logging user in
+                LoginStatusValue = LoginStatus.objects.get(user=userObject)
+                LoginStatusValue.is_loggedin = True
+                LoginStatusValue.save()
+
                 responseObject = {
                     "status": 200,
                     "response": userName+", your login was successfull"
@@ -177,7 +183,7 @@ def loginUser(request):
 
     return HttpResponse("Error : POST request Needed")
 
-# For User Logout
+# For User Logout @
 @csrf_exempt  # to avoid csrf forbiden verification error
 def logoutUser(request):
     if request.method == "POST":
@@ -187,6 +193,7 @@ def logoutUser(request):
             email = parsed_data.get('email')
 
             userObject = User.objects.get(email=email)
+            #for logging user out
             LoginStatusObject = LoginStatus.objects.get(user=userObject) 
             LoginStatusObject.is_loggedin = False
             LoginStatusObject.save()
@@ -195,7 +202,7 @@ def logoutUser(request):
        
     return HttpResponse("Error : POST request Needed")
 
-# To Upload Video Data
+# To Upload Video Data @
 @csrf_exempt  # to avoid csrf forbiden verification error
 def uploadVideo(request):
     if request.method == "POST":
@@ -210,7 +217,7 @@ def uploadVideo(request):
             # getting the userObject according to email
             userObject = User.objects.get(email=email)
             LoginStatusObject = LoginStatus.objects.get(user=userObject) 
-            if(LoginStatusObject.is_loggedin == True):
+            if(LoginStatusObject.is_loggedin == True):   #verifying if user is logged in
                     videoDataObject = VideoData(video_title=video_title, video_desc=video_desc, video_keywords=video_keywords, video_file=video_file,
                                                 notes_file=notes_file, video_thumbnail=video_thumbnail, user=userObject)
                     videoDataObject.save()
@@ -238,27 +245,40 @@ def uploadVideo(request):
     json_data = JSONRenderer().render(responseObject)
     return HttpResponse(json_data, content_type='application/json')
 
-# To increment Like Count
+# To increment Like Count @
 @csrf_exempt  # to avoid csrf forbiden verification error
 def likeVideo(request):
     if request.method == "POST":
-        if request.user.is_authenticated:
+        
             json_data = request.body
             stream = io.BytesIO(json_data)
             parsed_data = JSONParser().parse(stream)
             video_id = parsed_data.get('sno')
+            email = parsed_data.get('email')
 
-            likedVideoObject = VideoData.objects.get(sno=video_id)
-            likedVideoObject.video_likes += 1
-            likedVideoObject.save()
+            userObject = User.objects.get(email=email)
+            LoginStatusObject = LoginStatus.objects.get(user=userObject) 
+            
+            if(LoginStatusObject.is_loggedin == True):   #verifying if user is logged in
+                likedVideoObject = VideoData.objects.get(sno=video_id)
+                likedVideoObject.video_likes += 1
+                likedVideoObject.save()
+
+                responseObject = {
+                    "status": 200,
+                    "response": "Video Liked Successfully"
+                }
+
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
 
             responseObject = {
-                "status": 200,
-                "response": "Video Liked Successfully"
-            }
+            "status": 404,
+            "response": "You're not logged in"
+             }
 
             json_data = JSONRenderer().render(responseObject)
-            return HttpResponse(json_data, content_type='application/json')
+            return HttpResponse(json_data, content_type='application/json')    
 
     responseObject = {
         "status": 404,
@@ -268,27 +288,41 @@ def likeVideo(request):
     json_data = JSONRenderer().render(responseObject)
     return HttpResponse(json_data, content_type='application/json')
 
-# To increment View Count
+# To increment View Count @
 @csrf_exempt  # to avoid csrf forbiden verification error
 def viewVideo(request):
     if request.method == "POST":
-        if request.user.is_authenticated:
+        
             json_data = request.body
             stream = io.BytesIO(json_data)
             parsed_data = JSONParser().parse(stream)
             video_id = parsed_data.get('sno')
+            email = parsed_data.get('email')
 
-            viewedVideoObject = VideoData.objects.get(sno=video_id)
-            viewedVideoObject.video_views += 1
-            viewedVideoObject.save()
+            userObject = User.objects.get(email=email)
+            LoginStatusObject = LoginStatus.objects.get(user=userObject) 
+            
+            if(LoginStatusObject.is_loggedin == True):   #verifying if user is logged in
+
+                viewedVideoObject = VideoData.objects.get(sno=video_id)
+                viewedVideoObject.video_views += 1
+                viewedVideoObject.save()
+
+                responseObject = {
+                    "status": 200,
+                    "response": "Video view count increased Successfully"
+                }
+
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
 
             responseObject = {
-                "status": 200,
-                "response": "Video view count increased Successfully"
-            }
+            "status": 404,
+            "response": "You're not logged in"
+             }
 
             json_data = JSONRenderer().render(responseObject)
-            return HttpResponse(json_data, content_type='application/json')
+            return HttpResponse(json_data, content_type='application/json')    
 
     responseObject = {
         "status": 404,
@@ -298,27 +332,41 @@ def viewVideo(request):
     json_data = JSONRenderer().render(responseObject)
     return HttpResponse(json_data, content_type='application/json')
 
-# To increment Video Report Count
+# To increment Video Report Count @
 @csrf_exempt  # to avoid csrf forbiden verification error
 def reportVideo(request):
     if request.method == "POST":
-        if request.user.is_authenticated:
             json_data = request.body
             stream = io.BytesIO(json_data)
             parsed_data = JSONParser().parse(stream)
             video_id = parsed_data.get('sno')
+            email = parsed_data.get('email')
 
-            reportedVideoObject = VideoData.objects.get(sno=video_id)
-            reportedVideoObject.video_report_count += 1
-            reportedVideoObject.save()
+            userObject = User.objects.get(email=email)
+            LoginStatusObject = LoginStatus.objects.get(user=userObject) 
+            
+            if(LoginStatusObject.is_loggedin == True):   #verifying if user is logged in
+
+                reportedVideoObject = VideoData.objects.get(sno=video_id)
+                reportedVideoObject.video_report_count += 1
+                reportedVideoObject.save()
+
+                responseObject = {
+                    "status": 200,
+                    "response": "Video reported Successfully"
+                }
+
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
 
             responseObject = {
-                "status": 200,
-                "response": "Video reported Successfully"
-            }
+            "status": 404,
+            "response": "You're not logged in"
+             }
 
             json_data = JSONRenderer().render(responseObject)
-            return HttpResponse(json_data, content_type='application/json')
+            return HttpResponse(json_data, content_type='application/json')    
+    
 
     responseObject = {
         "status": 404,
@@ -328,12 +376,10 @@ def reportVideo(request):
     json_data = JSONRenderer().render(responseObject)
     return HttpResponse(json_data, content_type='application/json')
 
-# to add a video to History section
+# to add a video to History section @
 @csrf_exempt  # to avoid csrf forbiden verification error
 def addToHistory(request):
-    # an id and email is expected while adding a video to the history
     if request.method == "POST":
-        if request.user.is_authenticated:
             json_data = request.body
             stream = io.BytesIO(json_data)
             parsed_data = JSONParser().parse(stream)
@@ -341,15 +387,26 @@ def addToHistory(request):
             email = parsed_data.get('email')
 
             userObject = User.objects.get(email=email)
-            HistoryObject = History(video_id=video_id, user=userObject)
-            HistoryObject.save()
+            LoginStatusObject = LoginStatus.objects.get(user=userObject) 
+            
+            if(LoginStatusObject.is_loggedin == True):   #verifying if user is logged in
+                HistoryObject = History(video_id=video_id, user=userObject)
+                HistoryObject.save()
 
-            message = {
-                "response": "added video to history successfully !",
-                "status": 200
-            }
-            json_data = JSONRenderer().render(message)
-            return HttpResponse(json_data, content_type='application/json')
+                message = {
+                    "response": "added video to history successfully !",
+                    "status": 200
+                }
+                json_data = JSONRenderer().render(message)
+                return HttpResponse(json_data, content_type='application/json')
+
+            responseObject = {
+            "status": 404,
+            "response": "You're not logged in"
+             }
+
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')     
 
     message = {
         "response": "POST request needed",
@@ -358,30 +415,40 @@ def addToHistory(request):
     json_data = JSONRenderer().render(message)
     return HttpResponse(json_data, content_type='application/json')
 
-# to get user history data
+# to get user history data @
 @csrf_exempt  # to avoid csrf forbiden verification error
 def getUserHistory(request):
     # only email is required to know user history
     if request.method == "POST":
-        if request.user.is_authenticated:
             json_data = request.body
             stream = io.BytesIO(json_data)
             parsed_data = JSONParser().parse(stream)
             email = parsed_data.get('email')
 
             userObject = User.objects.get(email=email)
-            HistoryObjects = History.objects.filter(user=userObject)
+            LoginStatusObject = LoginStatus.objects.get(user=userObject) 
+            
+            if(LoginStatusObject.is_loggedin == True):   #verifying if user is logged in
+                HistoryObjects = History.objects.filter(user=userObject)
 
-            responseobject = {"status": 200,
-                            "response": []
-                            }
-            for historyItem in HistoryObjects:
-                VideoObject = VideoData.objects.get(sno=historyItem.video_id)
-                serializer = VideoDataSerializer(VideoObject)
-                responseobject["response"].append(serializer.data)
+                responseobject = {"status": 200,
+                                "response": []
+                                }
+                for historyItem in HistoryObjects:
+                    VideoObject = VideoData.objects.get(sno=historyItem.video_id)
+                    serializer = VideoDataSerializer(VideoObject)
+                    responseobject["response"].append(serializer.data)
 
-            json_data = JSONRenderer().render(responseobject)
-            return HttpResponse(json_data, content_type='application/json')
+                json_data = JSONRenderer().render(responseobject)
+                return HttpResponse(json_data, content_type='application/json')
+
+            responseObject = {
+            "status": 404,
+            "response": "You're not logged in"
+             }
+
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')         
 
     message = {
         "response": "POST request needed",
@@ -390,12 +457,11 @@ def getUserHistory(request):
     json_data = JSONRenderer().render(message)
     return HttpResponse(json_data, content_type='application/json')
 
-# to add a video to Bookmark section
+# to add a video to Bookmark section @
 @csrf_exempt  # to avoid csrf forbiden verification error
 def addToBookmark(request):
     # an id and email is expected while adding a video to the Bookmark
     if request.method == "POST":
-        if request.user.is_authenticated:
             json_data = request.body
             stream = io.BytesIO(json_data)
             parsed_data = JSONParser().parse(stream)
@@ -403,15 +469,28 @@ def addToBookmark(request):
             email = parsed_data.get('email')
 
             userObject = User.objects.get(email=email)
-            BookmarkObject = Bookmark(video_id=video_id, user=userObject)
-            BookmarkObject.save()
+            LoginStatusObject = LoginStatus.objects.get(user=userObject) 
+            
+            if(LoginStatusObject.is_loggedin == True):   #verifying if user is logged in
 
-            message = {
-                "response": "added video to Bookmark successfully !",
-                "status": 200
-            }
-            json_data = JSONRenderer().render(message)
-            return HttpResponse(json_data, content_type='application/json')
+                BookmarkObject = Bookmark(video_id=video_id, user=userObject)
+                BookmarkObject.save()
+
+                message = {
+                    "response": "added video to Bookmark successfully !",
+                    "status": 200
+                }
+                json_data = JSONRenderer().render(message)
+                return HttpResponse(json_data, content_type='application/json')
+
+            
+            responseObject = {
+            "status": 404,
+            "response": "You're not logged in"
+             }
+
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')        
 
     message = {
         "response": "POST request needed",
@@ -420,30 +499,40 @@ def addToBookmark(request):
     json_data = JSONRenderer().render(message)
     return HttpResponse(json_data, content_type='application/json')
 
-# to get user Bookmark data
+# to get user Bookmark data @
 @csrf_exempt  # to avoid csrf forbiden verification error
 def getUserBookmark(request):
     # only email is required to know user history
     if request.method == "POST":
-        if request.user.is_authenticated:
             json_data = request.body
             stream = io.BytesIO(json_data)
             parsed_data = JSONParser().parse(stream)
             email = parsed_data.get('email')
 
             userObject = User.objects.get(email=email)
-            BookmarkObjects = Bookmark.objects.filter(user=userObject)
+            LoginStatusObject = LoginStatus.objects.get(user=userObject) 
+            
+            if(LoginStatusObject.is_loggedin == True):   #verifying if user is logged in
+                BookmarkObjects = Bookmark.objects.filter(user=userObject)
 
-            responseobject = {"status": 200,
-                            "response": []
-                            }
-            for bookmarkItem in BookmarkObjects:
-                VideoObject = VideoData.objects.get(sno=bookmarkItem.video_id)
-                serializer = VideoDataSerializer(VideoObject)
-                responseobject["response"].append(serializer.data)
+                responseobject = {"status": 200,
+                                "response": []
+                                }
+                for bookmarkItem in BookmarkObjects:
+                    VideoObject = VideoData.objects.get(sno=bookmarkItem.video_id)
+                    serializer = VideoDataSerializer(VideoObject)
+                    responseobject["response"].append(serializer.data)
 
-            json_data = JSONRenderer().render(responseobject)
-            return HttpResponse(json_data, content_type='application/json')
+                json_data = JSONRenderer().render(responseobject)
+                return HttpResponse(json_data, content_type='application/json')
+
+            responseObject = {
+            "status": 404,
+            "response": "You're not logged in"
+             }
+
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')       
 
     message = {
         "response": "POST request needed",
@@ -452,72 +541,92 @@ def getUserBookmark(request):
     json_data = JSONRenderer().render(message)
     return HttpResponse(json_data, content_type='application/json')
 
-# THIS WILL BE IMPROVED MORE IN FUTURE
+# Search Video @
 @csrf_exempt  # to avoid csrf forbiden verification error
 def searchVideo(request):
     if request.method == "POST":
-        if request.user.is_authenticated:
             json_data = request.body
             stream = io.BytesIO(json_data)
             parsed_data = JSONParser().parse(stream)
             search_string = parsed_data.get('search_string')
+            email = parsed_data.get('email')
 
-            if len(search_string) > 80:
-                return HttpResponse("search query must be less than 80 characters")
-            else:
-                VideoDataObjectsByTitle = VideoData.objects.filter(
-                    video_title__icontains=search_string)
-                VideoDataObjectsByDesc = VideoData.objects.filter(
-                    video_desc__icontains=search_string)
-                VideoDataObjectsByKeywords = VideoData.objects.filter(
-                    video_keywords__icontains=search_string)
+            userObject = User.objects.get(email=email)
+            LoginStatusObject = LoginStatus.objects.get(user=userObject) 
+            
+            if(LoginStatusObject.is_loggedin == True):   #verifying if user is logged in
 
-                AllVideoDataObjects = VideoDataObjectsByTitle.union(
-                    VideoDataObjectsByDesc, VideoDataObjectsByKeywords)
+                    if len(search_string) > 80:
+                        return HttpResponse("search query must be less than 80 characters")
+                    else:
+                        VideoDataObjectsByTitle = VideoData.objects.filter(
+                            video_title__icontains=search_string)
+                        VideoDataObjectsByDesc = VideoData.objects.filter(
+                            video_desc__icontains=search_string)
+                        VideoDataObjectsByKeywords = VideoData.objects.filter(
+                            video_keywords__icontains=search_string)
 
-                if AllVideoDataObjects.count() == 0:
-                    message = {
-                        "response": "No result found",
-                        "status": 404
-                    }
-                    json_data = JSONRenderer().render(message)
-                    return HttpResponse(json_data, content_type='application/json')
-                else:
-                    serializer = VideoDataSerializer(
-                        AllVideoDataObjects, many=True)
-                    json_data = JSONRenderer().render(serializer.data)
+                        AllVideoDataObjects = VideoDataObjectsByTitle.union(
+                            VideoDataObjectsByDesc, VideoDataObjectsByKeywords)
 
-                    # returning the filtered searched json_video_data
-                    return HttpResponse(json_data, content_type='application/json')
+                        if AllVideoDataObjects.count() == 0:
+                            message = {
+                                "response": "No result found",
+                                "status": 404
+                            }
+                            json_data = JSONRenderer().render(message)
+                            return HttpResponse(json_data, content_type='application/json')
+                        else:
+                            serializer = VideoDataSerializer(
+                                AllVideoDataObjects, many=True)
+                            json_data = JSONRenderer().render(serializer.data)
+
+                            # returning the filtered searched json_video_data
+                            return HttpResponse(json_data, content_type='application/json')
+          
+            responseObject = {
+            "status": 404,
+            "response": "You're not logged in"
+             }
+
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')       
+                
 
     json_data = JSONRenderer().render({"response": "POST Request Needed"})
     return HttpResponse(json_data, content_type='application/json')
 
-#for deleting a video object
+#for deleting a video object @
 @csrf_exempt  # to avoid csrf forbiden verification error
 def deleteVideo(request):
     if request.method == "POST":
-        if request.user.is_authenticated:
             json_data = request.body
             stream = io.BytesIO(json_data)
             parsed_data = JSONParser().parse(stream)
             video_id = parsed_data.get('sno')
-            
-            videoDataObject = VideoData.objects.get(sno=video_id)
-            videoDataObject.delete()
+            email = parsed_data.get('email')
 
-            message = {
-                        "response": "Video Deleted Successfully",
-                        "status": 200
-                    }
-            json_data = JSONRenderer().render(message)
-            return HttpResponse(json_data, content_type='application/json')
+            userObject = User.objects.get(email=email)
+            LoginStatusObject = LoginStatus.objects.get(user=userObject) 
+            
+            if(LoginStatusObject.is_loggedin == True):   #verifying if user is logged in
+
+                    videoDataObject = VideoData.objects.get(sno=video_id)
+                    videoDataObject.delete()
+
+                    message = {
+                                "response": "Video Deleted Successfully",
+                                "status": 200
+                            }
+                    json_data = JSONRenderer().render(message)
+                    return HttpResponse(json_data, content_type='application/json')
         
-        message = {"response": "You are not Logged in",
-                   "status": 404
-                  }
-        json_data = JSONRenderer().render(message)
-        return HttpResponse(json_data, content_type='application/json')     
+            responseObject = {
+            "status": 404,
+            "response": "You're not logged in"
+             }
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')     
 
 
     message = {"response": "POST Request Needed",
@@ -526,6 +635,7 @@ def deleteVideo(request):
     json_data = JSONRenderer().render(message)
     return HttpResponse(json_data, content_type='application/json')          
 
+#for checking the current login status of the user
 @csrf_exempt  # to avoid csrf forbiden verification error
 def loginStatus(request):
     if request.method == "POST":
