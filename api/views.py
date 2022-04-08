@@ -136,12 +136,26 @@ def loginUser(request):
             parsed_data = JSONParser().parse(stream)
             userName = parsed_data.get('username')
             password = parsed_data.get('password')
-            # Authenticating user
-            user = authenticate(request, username=userName, password=password)
+            emailFromFrontend = parsed_data.get('email')
 
+            # Authenticating user
+            user = authenticate(request, username=userName, password=password)            
+            
             if user is not None:
                 # for successfull login
                 userObject = User.objects.get(username = user)
+
+                #verifying email
+                emailFromBackend = User.objects.get(username=userName).email;
+                if(emailFromFrontend != emailFromBackend):
+                    responseObject = {
+                    "status": 404,
+                    "response":"email not recognized !"
+                    }
+                    json_data = JSONRenderer().render(responseObject)
+                    # returning response
+                    return HttpResponse(json_data, content_type='application/json')
+
                 
                 #for logging user in
                 LoginStatusValue = LoginStatus.objects.get(user=userObject)
