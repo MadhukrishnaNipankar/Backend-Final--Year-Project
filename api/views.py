@@ -198,9 +198,19 @@ def logoutUser(request):
             LoginStatusObject.is_loggedin = False
             LoginStatusObject.save()
             
-            return HttpResponse("Logged out successfully")
+            responseObject = {
+                    "status": 200,
+                    "response":"Logged out Successfully"
+                }
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')
        
-    return HttpResponse("Error : POST request Needed")
+    responseObject = {
+                    "status": 404,
+                    "response":"POST request needed"
+                }
+    json_data = JSONRenderer().render(responseObject)
+    return HttpResponse(json_data, content_type='application/json')
 
 # To Upload Video Data @
 @csrf_exempt  # to avoid csrf forbiden verification error
