@@ -18,6 +18,7 @@ from django.urls import path, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from api import views
+from api import chatViews
 from django.views.static import serve
 
 urlpatterns = [
@@ -37,6 +38,11 @@ urlpatterns = [
     path('getUserBookmark/',views.getUserBookmark),
     path('deleteVideo/',views.deleteVideo),
     path('loginStatus/',views.loginStatus),
+
+    #for chatting features
+    path('GetChatRoom/',chatViews.GetChatRoom),
+    path('SendMessage/',chatViews.SendMessage),
+    path('makeNewChatRoom/',chatViews.makeNewChatRoom),
     re_path(r'^media/(?P<path>.*)$',serve,{'document_root':settings.MEDIA_ROOT}),
 ]
     

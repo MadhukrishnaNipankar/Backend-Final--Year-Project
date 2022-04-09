@@ -44,6 +44,25 @@ class LoginStatus(models.Model):
       is_loggedin =  models.BooleanField(default=False)
       user = models.ForeignKey(User,on_delete=models.CASCADE) # associated with an user
 
+
+
+#CHATTING DATA
+class ChatRoom(models.Model):
+    sno = models.AutoField(primary_key=True)
+    roomName = models.CharField(max_length=1000,default="")
+    roomPass = models.CharField(default="",max_length=1000)
+
+
+class Messages(models.Model):
+    sno = models.AutoField(primary_key=True)
+    value = models.CharField(max_length=4000,default="")
+    timestamp = models.DateTimeField(default=now)
+    username = models.CharField(default="",max_length=1000)
+    room = models.CharField(default="",max_length=1000)
+
+    
+
+
                    
 
 

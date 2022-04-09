@@ -12,3 +12,11 @@ class VideoDataSerializer(serializers.Serializer):
     video_file = serializers.FileField()
     notes_file = serializers.FileField()
     timestamp = serializers.DateTimeField()
+
+
+class MessageSerializer(serializers.Serializer):
+    sno = serializers.IntegerField()
+    value = serializers.CharField(max_length=4000)
+    timestamp = serializers.DateTimeField()
+    username = serializers.CharField(default="",max_length=1000)
+    room = serializers.CharField(default="",max_length=1000)
