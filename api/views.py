@@ -3,7 +3,7 @@ from django.http import HttpResponse
 
 # for serialization
 from django.shortcuts import render
-from .serializers import VideoDataSerializer
+from .serializers import VideoDataSerializer,UserProfilePhotoSerializer
 from rest_framework.renderers import JSONRenderer
 
 # for DeSerialization
@@ -699,10 +699,16 @@ def getVideoFeed(request):
             if(LoginStatusObject.is_loggedin == True):   #verifying if user is logged in
                   VideoDataObjects = VideoData.objects.all()
                   serializer = VideoDataSerializer(VideoDataObjects,many=True)
+                    
+                  profile_photoObject = UserProfilePhoto.objects.get(user=userObject)
+                  profile_photo_serializer = UserProfilePhotoSerializer(profile_photoObject)
+
                   responseObject = {
                   "status": 200,
-                  "response": serializer.data
+                  "response": serializer.data,
+                  "profile_pic":profile_photo_serializer.data
                   }
+                  
                   json_data = JSONRenderer().render(responseObject)
                   return HttpResponse(json_data, content_type='application/json')     
             

@@ -1,5 +1,0 @@
-from django.contrib.auth.models import User
-
-def signup(request):
-    myuser = User.objects.create_user("Vedant","ved@gmail.com","Kulkarni")
-    myuser.save()

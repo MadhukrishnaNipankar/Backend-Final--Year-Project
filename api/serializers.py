@@ -21,3 +21,6 @@ class MessageSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField()
     username = serializers.CharField(default="",max_length=1000)
     room = serializers.CharField(default="",max_length=1000)
+
+class UserProfilePhotoSerializer(serializers.Serializer):
+    profile_pic = serializers.FileField()  
