@@ -9,6 +9,7 @@ class VideoDataSerializer(serializers.Serializer):
     video_views = serializers.IntegerField(default=0)
     video_report_count = serializers.IntegerField(default=0)
     video_thumbnail = serializers.ImageField()
+    video_uploader_img = serializers.ImageField()
     video_file = serializers.FileField()
     notes_file = serializers.FileField()
     timestamp = serializers.DateTimeField()

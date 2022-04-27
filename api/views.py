@@ -100,12 +100,28 @@ def registerUser(request):
                     [email],
                     fail_silently=False,
                 )
-
-                return HttpResponse("User Registered Successfully")
+                
+                responseObject = {
+                "status": 200,
+                "response": "User Registered Successfully"
+                  }
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
 
             except IntegrityError:
-                return HttpResponse("username :  '"+userName+"'  is already taken. " + "please try another one")
-    return HttpResponse("Error : POST request Needed")
+                responseObject = {
+                "status": 404,
+                "response": "username :  '"+userName+"'  is already taken. " + "please try another one"
+                  }
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
+
+    responseObject = {
+                "status": 404,
+                "response": "Error: Post request needed"
+    }
+    json_data = JSONRenderer().render(responseObject)
+    return HttpResponse(json_data, content_type='application/json')        
 
 # For Email-OTP Verification @
 @csrf_exempt
@@ -242,8 +258,10 @@ def uploadVideo(request):
             LoginStatusObject = LoginStatus.objects.get(user=userObject) 
             if(LoginStatusObject.is_loggedin == True):   #verifying if user is logged in
                     username = userObject.username
+                    video_uploader_img = UserProfilePhoto.objects.get(user=userObject).profile_pic
+                    
                     videoDataObject = VideoData(video_title=video_title, video_desc=video_desc, video_keywords=video_keywords, video_file=video_file,
-                                                notes_file=notes_file, video_thumbnail=video_thumbnail, username=username,user=userObject)
+                                                notes_file=notes_file, video_thumbnail=video_thumbnail, username=username,video_uploader_img=video_uploader_img,user=userObject)
                     videoDataObject.save()
 
                     responseObject = {
@@ -700,6 +718,7 @@ def getVideoFeed(request):
                   VideoDataObjects = VideoData.objects.all()
                   serializer = VideoDataSerializer(VideoDataObjects,many=True)
                     
+                  #for profile photo of a user  
                   profile_photoObject = UserProfilePhoto.objects.get(user=userObject)
                   profile_photo_serializer = UserProfilePhotoSerializer(profile_photoObject)
 

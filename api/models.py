@@ -23,6 +23,7 @@ class VideoData(models.Model):
     notes_file = models.FileField(upload_to="notesFiles",null=True)
     timestamp = models.DateTimeField(default=now)
     username = models.CharField(max_length=1000,default="")
+    video_uploader_img = models.ImageField(null=True,blank=True,upload_to="channelPhotos")
     user = models.ForeignKey(User,on_delete=models.CASCADE) # associated with an user
 
 class OTP(models.Model):
