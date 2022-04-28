@@ -39,6 +39,7 @@ urlpatterns = [
     path('deleteVideo/',views.deleteVideo),
     path('loginStatus/',views.loginStatus),
     path('getVideoFeed/',views.getVideoFeed),
+    path('getYourVideos/',views.getYourVideos),
     #for chatting features
     path('GetChatRoom/',chatViews.GetChatRoom),
     path('SendMessage/',chatViews.SendMessage),
