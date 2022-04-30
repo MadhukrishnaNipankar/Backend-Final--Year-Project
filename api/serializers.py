@@ -15,6 +15,7 @@ class VideoDataSerializer(serializers.Serializer):
     notes_file = serializers.FileField()
     timestamp = serializers.DateTimeField()
     username = serializers.CharField(max_length=1000)
+    
 
 
 class MessageSerializer(serializers.Serializer):

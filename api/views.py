@@ -1,4 +1,5 @@
 
+from collections import OrderedDict
 from django.http import HttpResponse
 
 # for serialization
@@ -11,7 +12,7 @@ import io
 from rest_framework.parsers import JSONParser
 
 # import models
-from .models import EmailVerificationStatus, LoginStatus, UserProfilePhoto
+from .models import EmailVerificationStatus, LoginStatus, UserProfilePhoto, LikedBy
 from .models import VideoData
 from .models import OTP
 from . models import History
@@ -312,17 +313,33 @@ def likeVideo(request):
         LoginStatusObject = LoginStatus.objects.get(user=userObject)
 
         if(LoginStatusObject.is_loggedin == True):  # verifying if user is logged in
-            likedVideoObject = VideoData.objects.get(sno=video_id)
-            likedVideoObject.video_likes += 1
-            likedVideoObject.save()
+            try:
+                LikedByObject = LikedBy.objects.get(
+                    user=userObject, video_id=video_id)
+                responseObject = {
+                    "status": 404,
+                    "response": "You've already liked the video"
+                }
+                LikedByObject.save()
 
-            responseObject = {
-                "status": 200,
-                "response": "Video Liked Successfully"
-            }
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
 
-            json_data = JSONRenderer().render(responseObject)
-            return HttpResponse(json_data, content_type='application/json')
+            except LikedBy.DoesNotExist:
+                LikedByObject = LikedBy(user=userObject, video_id=video_id)
+                LikedByObject.save()
+
+                likedVideoObject = VideoData.objects.get(sno=video_id)
+                likedVideoObject.video_likes += 1
+                likedVideoObject.save()
+
+                responseObject = {
+                    "status": 200,
+                    "response": "Video Liked Successfully"
+                }
+
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
 
         responseObject = {
             "status": 404,
@@ -604,8 +621,6 @@ def getUserBookmark(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # Search Video @
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def searchVideo(request):
     if request.method == "POST":
@@ -746,12 +761,22 @@ def getVideoFeed(request):
 
         if(LoginStatusObject.is_loggedin == True):  # verifying if user is logged in
             VideoDataObjects = VideoData.objects.all()
+
             serializer = VideoDataSerializer(VideoDataObjects, many=True)
 
             # for profile photo of a user
             profile_photoObject = UserProfilePhoto.objects.get(user=userObject)
             profile_photo_serializer = UserProfilePhotoSerializer(
                 profile_photoObject)
+
+            # LikedByObj = LikedBy.objects.filter(user=userObject)
+            
+# CONTINUE THIS LOGIC
+            # LOGIC FOR MERGING PARTICULAR DATA IN SERIALIZED DATA
+            # d1=OrderedDict(serializer.data[0])
+            # d2=OrderedDict([("like_status",True)])
+            # both=OrderedDict(list(d1.items()) + list(d2.items()))
+            # print(both);
 
             responseObject = {
                 "status": 200,

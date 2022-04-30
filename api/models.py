@@ -63,6 +63,10 @@ class LoginStatus(models.Model):
     # associated with an user
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+class LikedBy(models.Model):
+    video_id = models.IntegerField()
+    # associated with an user
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 # CHATTING DATA
 class ChatRoom(models.Model):
