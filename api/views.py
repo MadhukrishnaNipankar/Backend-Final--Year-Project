@@ -4,7 +4,7 @@ from django.http import HttpResponse
 
 # for serialization
 from django.shortcuts import render
-from .serializers import VideoDataSerializer, UserProfilePhotoSerializer
+from .serializers import QuickNotesSerializer, VideoDataSerializer, UserProfilePhotoSerializer
 from rest_framework.renderers import JSONRenderer
 
 # for DeSerialization
@@ -12,7 +12,7 @@ import io
 from rest_framework.parsers import JSONParser
 
 # import models
-from .models import EmailVerificationStatus, LoginStatus, UserProfilePhoto, LikedBy
+from .models import EmailVerificationStatus, LoginStatus, QuickNotes, UserProfilePhoto, LikedBy
 from .models import VideoData
 from .models import OTP
 from . models import History
@@ -621,6 +621,8 @@ def getUserBookmark(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # Search Video @
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def searchVideo(request):
     if request.method == "POST":
@@ -770,7 +772,7 @@ def getVideoFeed(request):
                 profile_photoObject)
 
             # LikedByObj = LikedBy.objects.filter(user=userObject)
-            
+
 # CONTINUE THIS LOGIC
             # LOGIC FOR MERGING PARTICULAR DATA IN SERIALIZED DATA
             # d1=OrderedDict(serializer.data[0])
@@ -837,4 +839,88 @@ def getYourVideos(request):
                "status": 404
                }
     json_data = JSONRenderer().render(message)
+    return HttpResponse(json_data, content_type='application/json')
+
+# FOR SAVING QUICK NOTES
+
+
+@csrf_exempt  # to avoid csrf forbidden verification error
+def saveQuickNotes(request):
+    if request.method == "POST":
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        email = parsed_data.get('email')
+        notes_value = parsed_data.get('notes_value')
+
+        userObject = User.objects.get(email=email)
+        LoginStatusObject = LoginStatus.objects.get(user=userObject)
+
+        if(LoginStatusObject.is_loggedin == True):  # verifying if user is logged in
+            # saving quick notes
+            QuickNotesObj = QuickNotes(notes_value=notes_value, user=userObject)
+            QuickNotesObj.save()
+
+            responseObject = {
+                "status": 200,
+                "response": "Notes Saved Successfully"
+            }
+
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')
+
+        responseObject = {
+            "status": 404,
+            "response": "You're not logged in"
+        }
+
+        json_data = JSONRenderer().render(responseObject)
+        return HttpResponse(json_data, content_type='application/json')
+
+    responseObject = {
+        "status": 404,
+        "response": "POST Request was expected !"
+    }
+
+    json_data = JSONRenderer().render(responseObject)
+    return HttpResponse(json_data, content_type='application/json')
+
+
+# FOR GETTING DESIRED QUICK NOTES
+@csrf_exempt  # to avoid csrf forbidden verification error
+def getQuickNotes(request):
+    if request.method == "POST":
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        email = parsed_data.get('email')
+
+        userObject = User.objects.get(email=email)
+        LoginStatusObject = LoginStatus.objects.get(user=userObject)
+
+        if(LoginStatusObject.is_loggedin == True):  # verifying if user is logged in
+            # saving quick notes
+            QuickNotesObj = QuickNotes.objects.filter(user=userObject)
+            serializer = QuickNotesSerializer(QuickNotesObj, many=True)
+            responseObject = {
+                "status": 200,
+                "response": serializer.data
+            }
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')
+
+        responseObject = {
+            "status": 404,
+            "response": "You're not logged in"
+        }
+
+        json_data = JSONRenderer().render(responseObject)
+        return HttpResponse(json_data, content_type='application/json')
+
+    responseObject = {
+        "status": 404,
+        "response": "POST Request was expected !"
+    }
+
+    json_data = JSONRenderer().render(responseObject)
     return HttpResponse(json_data, content_type='application/json')

@@ -40,6 +40,10 @@ urlpatterns = [
     path('loginStatus/', views.loginStatus),
     path('getVideoFeed/', views.getVideoFeed),
     path('getYourVideos/', views.getYourVideos),
+    #for saving and getting quick notes
+    path('saveQuickNotes/', views.saveQuickNotes),
+    path('getQuickNotes/', views.getQuickNotes),
+
     # for chatting features
     path('GetChatRoom/', chatViews.GetChatRoom),
     path('SendMessage/', chatViews.SendMessage),

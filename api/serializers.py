@@ -28,3 +28,6 @@ class MessageSerializer(serializers.Serializer):
 
 class UserProfilePhotoSerializer(serializers.Serializer):
     profile_pic = serializers.FileField()
+
+class QuickNotesSerializer(serializers.Serializer):
+    notes_value = serializers.CharField() 

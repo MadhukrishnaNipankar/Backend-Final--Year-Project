@@ -63,12 +63,25 @@ class LoginStatus(models.Model):
     # associated with an user
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+# USED FOR AVOIDING REDUNDANT LIKES
+
+
 class LikedBy(models.Model):
     video_id = models.IntegerField()
     # associated with an user
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+# FOR QUICK NOTES
+
+
+class QuickNotes(models.Model):
+    notes_value = models.CharField(max_length=10000000)
+    # associated with an user
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
 # CHATTING DATA
+
+
 class ChatRoom(models.Model):
     sno = models.AutoField(primary_key=True)
     roomName = models.CharField(max_length=1000, default="")
