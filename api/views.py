@@ -422,13 +422,46 @@ def reportVideo(request):
 
             reportedVideoObject = VideoData.objects.get(sno=video_id)
             reportedVideoObject.video_report_count += 1
-            reportedVideoObject.save()
 
             responseObject = {
                 "status": 200,
                 "response": "Video reported Successfully"
             }
 
+            # name is required for warning message string 
+            ReportedVideoName = VideoData.objects.get(sno=video_id).video_title
+           
+           #send warning message if report count is 4
+            if(reportedVideoObject.video_report_count == 4):
+                # Getting email from database , for sending security alert for bad credentials !
+                email_mesg = "Warning"+"\n\n"+"Dear "+str(userObject.username) + \
+                    ", your video titled '"+str(ReportedVideoName) +"', has been reported by 4 distinct users. Kindly check the authenticity of your content"+"\n\n"+"Note: According to our guidelines , A video is automatically deleted if reported 10 times";
+
+                send_mail(
+                    'Warning Alert !',
+                    email_mesg,
+                    'developerus.community@gmail.com',
+                    [email],
+                    fail_silently=False,
+                )
+            reportedVideoObject.save()
+
+           #delete video,  if report count is 10
+            if(reportedVideoObject.video_report_count == 10):
+                 # Getting email from database , for sending security alert for bad credentials !
+                email_mesg = ""+"\n\n"+"Dear "+str(userObject.username) + \
+                    ", your video titled '"+str(ReportedVideoName) +"', has been deleted due to 10 reports by distinct users :(";
+
+                send_mail(
+                    'Video Deleted by Learnoscope Community',
+                    email_mesg,
+                    'developerus.community@gmail.com',
+                    [email],
+                    fail_silently=False,
+                )
+                reportedVideoObject.delete()
+                reportedVideoObject.save()
+    
             json_data = JSONRenderer().render(responseObject)
             return HttpResponse(json_data, content_type='application/json')
 
@@ -449,8 +482,6 @@ def reportVideo(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # to add a video to History section @
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def addToHistory(request):
     if request.method == "POST":
