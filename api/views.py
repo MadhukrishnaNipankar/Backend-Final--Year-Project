@@ -12,7 +12,7 @@ import io
 from rest_framework.parsers import JSONParser
 
 # import models
-from .models import EmailVerificationStatus, LoginStatus, QuickNotes, UserProfilePhoto, LikedBy
+from .models import EmailVerificationStatus, LoginStatus, QuickNotes, ReportedBy, UserProfilePhoto, LikedBy
 from .models import VideoData
 from .models import OTP
 from . models import History
@@ -405,7 +405,6 @@ def viewVideo(request):
 
 # To increment Video Report Count @
 
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def reportVideo(request):
     if request.method == "POST":
@@ -419,51 +418,67 @@ def reportVideo(request):
         LoginStatusObject = LoginStatus.objects.get(user=userObject)
 
         if(LoginStatusObject.is_loggedin == True):  # verifying if user is logged in
+            try:
+                    ReportedByObject = ReportedBy.objects.get(
+                        user=userObject, video_id=video_id)
+                    
+                    responseObject = {
+                        "status": 404,
+                        "response": "You've already reported the video"
+                    }
+                    ReportedByObject.save()
+                    
+                    json_data = JSONRenderer().render(responseObject)
+                    return HttpResponse(json_data, content_type='application/json')
 
-            reportedVideoObject = VideoData.objects.get(sno=video_id)
-            reportedVideoObject.video_report_count += 1
+            except ReportedBy.DoesNotExist:     
+                    ReportedByObject = ReportedBy(user=userObject, video_id=video_id)
+                    ReportedByObject.save()
+ 
+                    reportedVideoObject = VideoData.objects.get(sno=video_id)
+                    reportedVideoObject.video_report_count += 1
 
-            responseObject = {
-                "status": 200,
-                "response": "Video reported Successfully"
-            }
+                    responseObject = {
+                        "status": 200,
+                        "response": "Video reported Successfully"
+                    }
 
-            # name is required for warning message string 
-            ReportedVideoName = VideoData.objects.get(sno=video_id).video_title
-           
-           #send warning message if report count is 4
-            if(reportedVideoObject.video_report_count == 4):
-                # Getting email from database , for sending security alert for bad credentials !
-                email_mesg = "Warning"+"\n\n"+"Dear "+str(userObject.username) + \
-                    ", your video titled '"+str(ReportedVideoName) +"', has been reported by 4 distinct users. Kindly check the authenticity of your content"+"\n\n"+"Note: According to our guidelines , A video is automatically deleted if reported 10 times";
+                    # name is required for warning message string 
+                    ReportedVideoName = VideoData.objects.get(sno=video_id).video_title
+                
+                #send warning message if report count is 4
+                    if(reportedVideoObject.video_report_count == 4):
+                        # Getting email from database , for sending security alert for bad credentials !
+                        email_mesg = "Warning"+"\n\n"+"Dear "+str(userObject.username) + \
+                            ", your video titled '"+str(ReportedVideoName) +"', has been reported by 4 distinct users. Kindly check the authenticity of your content"+"\n\n"+"Note: According to our guidelines , A video is automatically deleted if reported 10 times";
 
-                send_mail(
-                    'Warning Alert !',
-                    email_mesg,
-                    'developerus.community@gmail.com',
-                    [email],
-                    fail_silently=False,
-                )
-            reportedVideoObject.save()
+                        send_mail(
+                            'Warning Alert !',
+                            email_mesg,
+                            'developerus.community@gmail.com',
+                            [email],
+                            fail_silently=False,
+                        )
+                    reportedVideoObject.save()
 
-           #delete video,  if report count is 10
-            if(reportedVideoObject.video_report_count == 10):
-                 # Getting email from database , for sending security alert for bad credentials !
-                email_mesg = ""+"\n\n"+"Dear "+str(userObject.username) + \
-                    ", your video titled '"+str(ReportedVideoName) +"', has been deleted due to 10 reports by distinct users :(";
+                #delete video,  if report count is 10
+                    if(reportedVideoObject.video_report_count == 10):
+                        # Getting email from database , for sending security alert for bad credentials !
+                        email_mesg = ""+"\n\n"+"Dear "+str(userObject.username) + \
+                            ", your video titled '"+str(ReportedVideoName) +"', has been deleted due to 10 reports by distinct users :(";
 
-                send_mail(
-                    'Video Deleted by Learnoscope Community',
-                    email_mesg,
-                    'developerus.community@gmail.com',
-                    [email],
-                    fail_silently=False,
-                )
-                reportedVideoObject.delete()
-                reportedVideoObject.save()
-    
-            json_data = JSONRenderer().render(responseObject)
-            return HttpResponse(json_data, content_type='application/json')
+                        send_mail(
+                            'Video Deleted by Learnoscope Community',
+                            email_mesg,
+                            'developerus.community@gmail.com',
+                            [email],
+                            fail_silently=False,
+                        )
+                        reportedVideoObject.delete()
+                        reportedVideoObject.save()
+            
+                    json_data = JSONRenderer().render(responseObject)
+                    return HttpResponse(json_data, content_type='application/json')
 
         responseObject = {
             "status": 404,
