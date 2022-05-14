@@ -11,7 +11,7 @@ import io
 from rest_framework.parsers import JSONParser
 
 # import models
-from .models import EmailVerificationStatus, LoginStatus, QuickNotes, ReportedBy, UserProfilePhoto, LikedBy
+from .models import EmailVerificationStatus, LoginStatus, QuickNotes, ReportedBy, UserProfilePhoto, LikedBy, PhoneNumber
 from .models import VideoData
 from .models import OTP
 from . models import History
@@ -33,6 +33,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 # for random number generation
 import random
+import pywhatkit as pwt  # for sending whatsapp messages
+import time  # for sending reminder on a specific time
+from datetime import datetime
 
 # For Registering a New User
 
@@ -42,6 +45,7 @@ def registerUser(request):
     if request.method == "POST":
         # assuming that , this data is already verified
         userName = request.POST.get('username')
+        phone = request.POST.get('phone')
         email = request.POST.get('email')
         password = request.POST.get('password')
         firstName = request.POST.get('firstName')
@@ -72,9 +76,9 @@ def registerUser(request):
                     profile_pic=profile_pic, user=userObject)
                 profilePhoto.save()
 
-                # setting default login status of user as "False"
-                Loginobj = LoginStatus(is_loggedin=False, user=userObject)
-                Loginobj.save()
+                # saving phone number to PhoneNumber
+                PhoneNumberObj = PhoneNumber(phone=phone, user=userObject)
+                PhoneNumberObj.save()
 
                 # Saving the User Object
                 userObject.save()
@@ -404,6 +408,7 @@ def viewVideo(request):
 
 # To increment Video Report Count @
 
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def reportVideo(request):
     if request.method == "POST":
@@ -418,66 +423,71 @@ def reportVideo(request):
 
         if(LoginStatusObject.is_loggedin == True):  # verifying if user is logged in
             try:
-                    ReportedByObject = ReportedBy.objects.get(
-                        user=userObject, video_id=video_id)
-                    
-                    responseObject = {
-                        "status": 404,
-                        "response": "You've already reported the video"
-                    }
-                    ReportedByObject.save()
-                    
-                    json_data = JSONRenderer().render(responseObject)
-                    return HttpResponse(json_data, content_type='application/json')
+                ReportedByObject = ReportedBy.objects.get(
+                    user=userObject, video_id=video_id)
 
-            except ReportedBy.DoesNotExist:     
-                    ReportedByObject = ReportedBy(user=userObject, video_id=video_id)
-                    ReportedByObject.save()
- 
-                    reportedVideoObject = VideoData.objects.get(sno=video_id)
-                    reportedVideoObject.video_report_count += 1
+                responseObject = {
+                    "status": 404,
+                    "response": "You've already reported the video"
+                }
+                ReportedByObject.save()
 
-                    responseObject = {
-                        "status": 200,
-                        "response": "Video reported Successfully"
-                    }
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
 
-                    # name is required for warning message string 
-                    ReportedVideoName = VideoData.objects.get(sno=video_id).video_title
-                
-                #send warning message if report count is 4
-                    if(reportedVideoObject.video_report_count == 4):
-                        # Getting email from database , for sending security alert for bad credentials !
-                        email_mesg = "Warning"+"\n\n"+"Dear "+str(userObject.username) + \
-                            ", your video titled '"+str(ReportedVideoName) +"', has been reported by 4 distinct users. Kindly check the authenticity of your content"+"\n\n"+"Note: According to our guidelines , A video is automatically deleted if reported 10 times";
+            except ReportedBy.DoesNotExist:
+                ReportedByObject = ReportedBy(
+                    user=userObject, video_id=video_id)
+                ReportedByObject.save()
 
-                        send_mail(
-                            'Warning Alert !',
-                            email_mesg,
-                            'developerus.community@gmail.com',
-                            [email],
-                            fail_silently=False,
-                        )
+                reportedVideoObject = VideoData.objects.get(sno=video_id)
+                reportedVideoObject.video_report_count += 1
+
+                responseObject = {
+                    "status": 200,
+                    "response": "Video reported Successfully"
+                }
+
+                # name is required for warning message string
+                ReportedVideoName = VideoData.objects.get(
+                    sno=video_id).video_title
+
+                # send warning message if report count is 4
+                if(reportedVideoObject.video_report_count == 4):
+                    # Getting email from database , for sending security alert for bad credentials !
+                    email_mesg = "Warning"+"\n\n"+"Dear "+str(userObject.username) + \
+                        ", your video titled '"+str(ReportedVideoName) + "', has been reported by 4 distinct users. Kindly check the authenticity of your content" + \
+                        "\n\n"+"Note: According to our guidelines , A video is automatically deleted if reported 10 times"
+
+                    send_mail(
+                        'Warning Alert !',
+                        email_mesg,
+                        'developerus.community@gmail.com',
+                        [email],
+                        fail_silently=False,
+                    )
+                reportedVideoObject.save()
+
+                # delete video,  if report count is 10
+                if(reportedVideoObject.video_report_count == 10):
+                    # Getting email from database , for sending security alert for bad credentials !
+                    email_mesg = ""+"\n\n"+"Dear "+str(userObject.username) + \
+                        ", your video titled '" + \
+                        str(ReportedVideoName) + \
+                        "', has been deleted due to 10 reports by distinct users :("
+
+                    send_mail(
+                        'Video Deleted by Learnoscope Community',
+                        email_mesg,
+                        'developerus.community@gmail.com',
+                        [email],
+                        fail_silently=False,
+                    )
+                    reportedVideoObject.delete()
                     reportedVideoObject.save()
 
-                #delete video,  if report count is 10
-                    if(reportedVideoObject.video_report_count == 10):
-                        # Getting email from database , for sending security alert for bad credentials !
-                        email_mesg = ""+"\n\n"+"Dear "+str(userObject.username) + \
-                            ", your video titled '"+str(ReportedVideoName) +"', has been deleted due to 10 reports by distinct users :(";
-
-                        send_mail(
-                            'Video Deleted by Learnoscope Community',
-                            email_mesg,
-                            'developerus.community@gmail.com',
-                            [email],
-                            fail_silently=False,
-                        )
-                        reportedVideoObject.delete()
-                        reportedVideoObject.save()
-            
-                    json_data = JSONRenderer().render(responseObject)
-                    return HttpResponse(json_data, content_type='application/json')
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
 
         responseObject = {
             "status": 404,
@@ -496,6 +506,8 @@ def reportVideo(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # to add a video to History section @
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def addToHistory(request):
     if request.method == "POST":
@@ -903,7 +915,8 @@ def saveQuickNotes(request):
 
         if(LoginStatusObject.is_loggedin == True):  # verifying if user is logged in
             # saving quick notes
-            QuickNotesObj = QuickNotes(notes_value=notes_value, user=userObject)
+            QuickNotesObj = QuickNotes(
+                notes_value=notes_value, user=userObject)
             QuickNotesObj.save()
 
             responseObject = {
@@ -950,6 +963,87 @@ def getQuickNotes(request):
             responseObject = {
                 "status": 200,
                 "response": serializer.data
+            }
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')
+
+        responseObject = {
+            "status": 404,
+            "response": "You're not logged in"
+        }
+
+        json_data = JSONRenderer().render(responseObject)
+        return HttpResponse(json_data, content_type='application/json')
+
+    responseObject = {
+        "status": 404,
+        "response": "POST Request was expected !"
+    }
+
+    json_data = JSONRenderer().render(responseObject)
+    return HttpResponse(json_data, content_type='application/json')
+
+
+# #REMINDER THROUGH WHATSAPP MESSAGE
+@csrf_exempt  # to avoid csrf forbidden verification error
+def reminder(request):
+    if request.method == "POST":
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        email = parsed_data.get('email')
+        video_id = parsed_data.get('sno')
+        timeOfReminder = parsed_data.get('timeOfReminder')
+
+        userObject = User.objects.get(email=email)
+        LoginStatusObject = LoginStatus.objects.get(user=userObject)
+
+        if(LoginStatusObject.is_loggedin == True):  # verifying if user is logged in
+            # evaluating current time
+            now = datetime.now()
+            current_hour = int(now.strftime("%H"))
+            current_minutes = int(now.strftime("%M"))
+            hrToSend = current_hour
+            minToSend = current_minutes
+
+            if(timeOfReminder == "1h"):
+                hrToSend = current_hour+1
+            elif(timeOfReminder == "2h"):
+                hrToSend = current_hour+2
+            elif(timeOfReminder == "15m"):
+                minToSend = current_minutes+15
+                if(minToSend >= 60):
+                    minToSend = minToSend-60
+                    hrToSend = current_hour+1
+            elif(timeOfReminder == "10m"):
+                minToSend = current_minutes+10
+                if(minToSend >= 60):
+                    minToSend = minToSend-60
+                    hrToSend = current_hour+1
+            elif(timeOfReminder == "5m"):
+                minToSend = current_minutes+1
+                if(minToSend >= 60):
+                    minToSend = minToSend-60
+                    hrToSend = current_hour+1
+            else:
+                responseObject = {
+                    "status": 404,
+                    "response": "invalid time format"
+                }
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
+
+            phoneObject = PhoneNumber.objects.get(user=userObject)
+            videoDataObject = VideoData.objects.get(sno=video_id)
+
+            ReminderMessage = "Hey "+userObject.username+", It's a reminder to go through the video named : \"" + \
+                videoDataObject.video_title+"\"\n\n\n\n❤Team LearnoScope"
+            pwt.sendwhatmsg(phoneObject.phone, ReminderMessage,
+                            hrToSend, minToSend, 8, True, 5)
+
+            responseObject = {
+                "status": 200,
+                "response": "reminder sent on whatsapp"
             }
             json_data = JSONRenderer().render(responseObject)
             return HttpResponse(json_data, content_type='application/json')

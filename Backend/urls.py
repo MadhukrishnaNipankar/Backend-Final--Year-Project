@@ -48,6 +48,11 @@ urlpatterns = [
     path('GetChatRoom/', chatViews.GetChatRoom),
     path('SendMessage/', chatViews.SendMessage),
     path('makeNewChatRoom/', chatViews.makeNewChatRoom),
+
+    #for reminder
+     path('reminder/',views.reminder),
+ 
+    #for media files
     re_path(r'^media/(?P<path>.*)$', serve,
             {'document_root': settings.MEDIA_ROOT}),
 ]

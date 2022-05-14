@@ -11,9 +11,14 @@ class UserProfilePhoto(models.Model):
     # associated with an user
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+# For Managing Phone Numbers
+class PhoneNumber(models.Model):
+    sno = models.AutoField(primary_key=True)
+    phone = models.CharField(max_length=13 ,default="")    #phone number   
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
 # For Managing Video Data
-
-
 class VideoData(models.Model):
     sno = models.AutoField(primary_key=True)
     video_title = models.CharField(max_length=1000)
