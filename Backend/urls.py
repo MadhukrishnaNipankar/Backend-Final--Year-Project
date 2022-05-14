@@ -40,6 +40,8 @@ urlpatterns = [
     path('loginStatus/', views.loginStatus),
     path('getVideoFeed/', views.getVideoFeed),
     path('getYourVideos/', views.getYourVideos),
+    path('getUserProfile/', views.getUserProfile),
+    
     #for saving and getting quick notes
     path('saveQuickNotes/', views.saveQuickNotes),
     path('getQuickNotes/', views.getQuickNotes),

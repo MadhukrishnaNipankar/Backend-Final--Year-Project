@@ -1063,3 +1063,52 @@ def reminder(request):
 
     json_data = JSONRenderer().render(responseObject)
     return HttpResponse(json_data, content_type='application/json')
+
+
+@csrf_exempt  # to avoid csrf forbidden verification error
+def getUserProfile(request):
+    if request.method == "POST":
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        email = parsed_data.get('email')
+
+        userObject = User.objects.get(email=email)
+        LoginStatusObject = LoginStatus.objects.get(user=userObject)
+
+        if(LoginStatusObject.is_loggedin == True):  # verifying if user is logged in
+            uploadCount = len(VideoData.objects.filter(user=userObject))
+            videoSeenCount = len(History.objects.filter(user=userObject))
+            bookmarkCount = len(Bookmark.objects.filter(user=userObject))
+
+            # for profile photo of a user
+            profile_photoObject = UserProfilePhoto.objects.get(user=userObject)
+            profile_photo_serializer = UserProfilePhotoSerializer(
+                profile_photoObject)
+
+            responseObject = {
+                "status": 200,
+                "profile_pic": profile_photo_serializer.data,
+                "uploadCount":uploadCount,
+                "videoSeenCount":videoSeenCount,
+                "bookmarkCount":bookmarkCount,
+                "dateJoined":userObject.date_joined,
+                "firstName":userObject.first_name,
+                "lastName":userObject.last_name
+            }
+
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')
+
+        responseObject = {
+            "status": 404,
+            "response": "You're not logged in"
+        }
+        json_data = JSONRenderer().render(responseObject)
+        return HttpResponse(json_data, content_type='application/json')
+
+    message = {"response": "POST Request Needed",
+               "status": 404
+               }
+    json_data = JSONRenderer().render(message)
+    return HttpResponse(json_data, content_type='application/json')
