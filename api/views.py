@@ -2,7 +2,7 @@ from collections import OrderedDict
 from django.http import HttpResponse
 
 # for serialization
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from .serializers import QuickNotesSerializer, VideoDataSerializer, UserProfilePhotoSerializer
 from rest_framework.renderers import JSONRenderer
 
@@ -105,13 +105,15 @@ def registerUser(request):
                     fail_silently=False,
                 )
 
-                responseObject = {
-                    "status": 200,
-                    "response": "User Registered Successfully"
-                }
-                json_data = JSONRenderer().render(responseObject)
-                return HttpResponse(json_data, content_type='application/json')
-
+                # responseObject = {
+                #     "status": 200,
+                #     "response": "User Registered Successfully<br><a href=`https://facebook.com`>Verify Email</a>"
+                # }
+                #IF USER SUCCESSFULLY GETS REGISTERED, HE/SHE IS REDIRECTED TO OTP PAGE
+                # json_data = JSONRenderer().render(responseObject)
+                # return HttpResponse(json_data, content_type='application/json')
+                return redirect("http://localhost:3000/otp")
+           
             except IntegrityError:
                 responseObject = {
                     "status": 404,
@@ -221,8 +223,6 @@ def loginUser(request):
     return HttpResponse("Error : POST request Needed")
 
 # For User Logout @
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def logoutUser(request):
     if request.method == "POST":
@@ -252,8 +252,6 @@ def logoutUser(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # To Upload Video Data @
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def uploadVideo(request):
     if request.method == "POST":
@@ -300,8 +298,6 @@ def uploadVideo(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # To increment Like Count @
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def likeVideo(request):
     if request.method == "POST":
@@ -361,8 +357,6 @@ def likeVideo(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # To increment View Count @
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def viewVideo(request):
     if request.method == "POST":
@@ -407,8 +401,6 @@ def viewVideo(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # To increment Video Report Count @
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def reportVideo(request):
     if request.method == "POST":
@@ -506,8 +498,6 @@ def reportVideo(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # to add a video to History section @
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def addToHistory(request):
     if request.method == "POST":
@@ -547,8 +537,6 @@ def addToHistory(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # to get user history data @
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def getUserHistory(request):
     # only email is required to know user history
@@ -591,8 +579,6 @@ def getUserHistory(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # to add a video to Bookmark section @
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def addToBookmark(request):
     # an id and email is expected while adding a video to the Bookmark
@@ -634,8 +620,6 @@ def addToBookmark(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # to get user Bookmark data @
-
-
 @csrf_exempt  # to avoid csrf forbiden verification error
 def getUserBookmark(request):
     # only email is required to know user history
