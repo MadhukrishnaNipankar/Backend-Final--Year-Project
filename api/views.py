@@ -135,9 +135,13 @@ def registerUser(request):
 @csrf_exempt
 def verifyEmail(request):
     if request.method == "POST":
-        otpFromFrontend = request.POST.get('otp')
-        email = request.POST.get('email')
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        parsed_data = JSONParser().parse(stream)
+        otpFromFrontend = parsed_data.get('otp')
+        email = parsed_data.get('email')
 
+        print(otpFromFrontend,email)
         userObject = User.objects.get(email=email)
         otpFromBackend = OTP.objects.get(user=userObject).otp
 
