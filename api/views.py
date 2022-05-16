@@ -2,7 +2,7 @@ from collections import OrderedDict
 from django.http import HttpResponse
 
 # for serialization
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from .serializers import QuickNotesSerializer, VideoDataSerializer, UserProfilePhotoSerializer
 from rest_framework.renderers import JSONRenderer
 
@@ -109,11 +109,11 @@ def registerUser(request):
                 #     "status": 200,
                 #     "response": "User Registered Successfully<br><a href=`https://facebook.com`>Verify Email</a>"
                 # }
-                #IF USER SUCCESSFULLY GETS REGISTERED, HE/SHE IS REDIRECTED TO OTP PAGE
+                # IF USER SUCCESSFULLY GETS REGISTERED, HE/SHE IS REDIRECTED TO OTP PAGE
                 # json_data = JSONRenderer().render(responseObject)
                 # return HttpResponse(json_data, content_type='application/json')
                 return redirect("http://localhost:3000/otp")
-           
+
             except IntegrityError:
                 responseObject = {
                     "status": 404,
@@ -141,7 +141,7 @@ def verifyEmail(request):
         otpFromFrontend = parsed_data.get('otp')
         email = parsed_data.get('email')
 
-        print(otpFromFrontend,email)
+        print(otpFromFrontend, email)
         userObject = User.objects.get(email=email)
         otpFromBackend = OTP.objects.get(user=userObject).otp
 
@@ -149,11 +149,27 @@ def verifyEmail(request):
             emailverificationObject = EmailVerificationStatus(
                 is_email_verified=True, user=userObject)
             emailverificationObject.save()
-            return HttpResponse("Dear "+str(userObject.username)+" your email is verified successfully !")
-        else:
-            return HttpResponse("Invalid OTP")
+            responseObject = {
+                "status": 200,
+                "response": "Dear "+str(userObject.username)+" your email is verified successfully !"
+            }
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')
 
-    return HttpResponse("POST request needed")
+        else:
+            responseObject = {
+                "status": 404,
+                "response": "Invalid OTP"
+            }
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')
+
+    responseObject = {
+        "status": 404,
+        "response": "POST request needed"
+    }
+    json_data = JSONRenderer().render(responseObject)
+    return HttpResponse(json_data, content_type='application/json')
 
 # For Logging User In @
 
@@ -167,8 +183,8 @@ def loginUser(request):
         userName = parsed_data.get('username')
         password = parsed_data.get('password')
         emailFromFrontend = parsed_data.get('email')
-        
-        #if username doesn't exist, then error msg would be sent
+
+        # if username doesn't exist, then error msg would be sent
         if not User.objects.filter(username=userName).exists():
             responseObject = {
                 "status": 404,
@@ -236,6 +252,8 @@ def loginUser(request):
     return HttpResponse("Error : POST request Needed")
 
 # For User Logout @
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def logoutUser(request):
     if request.method == "POST":
@@ -265,6 +283,8 @@ def logoutUser(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # To Upload Video Data @
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def uploadVideo(request):
     if request.method == "POST":
@@ -311,6 +331,8 @@ def uploadVideo(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # To increment Like Count @
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def likeVideo(request):
     if request.method == "POST":
@@ -370,6 +392,8 @@ def likeVideo(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # To increment View Count @
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def viewVideo(request):
     if request.method == "POST":
@@ -414,6 +438,8 @@ def viewVideo(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # To increment Video Report Count @
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def reportVideo(request):
     if request.method == "POST":
@@ -511,6 +537,8 @@ def reportVideo(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # to add a video to History section @
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def addToHistory(request):
     if request.method == "POST":
@@ -550,6 +578,8 @@ def addToHistory(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # to get user history data @
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def getUserHistory(request):
     # only email is required to know user history
@@ -592,6 +622,8 @@ def getUserHistory(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # to add a video to Bookmark section @
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def addToBookmark(request):
     # an id and email is expected while adding a video to the Bookmark
@@ -633,6 +665,8 @@ def addToBookmark(request):
     return HttpResponse(json_data, content_type='application/json')
 
 # to get user Bookmark data @
+
+
 @csrf_exempt  # to avoid csrf forbiden verification error
 def getUserBookmark(request):
     # only email is required to know user history
@@ -1086,12 +1120,12 @@ def getUserProfile(request):
             responseObject = {
                 "status": 200,
                 "profile_pic": profile_photo_serializer.data,
-                "uploadCount":uploadCount,
-                "videoSeenCount":videoSeenCount,
-                "bookmarkCount":bookmarkCount,
-                "dateJoined":userObject.date_joined,
-                "firstName":userObject.first_name,
-                "lastName":userObject.last_name
+                "uploadCount": uploadCount,
+                "videoSeenCount": videoSeenCount,
+                "bookmarkCount": bookmarkCount,
+                "dateJoined": userObject.date_joined,
+                "firstName": userObject.first_name,
+                "lastName": userObject.last_name
             }
 
             json_data = JSONRenderer().render(responseObject)
