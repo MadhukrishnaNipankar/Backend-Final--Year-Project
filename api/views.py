@@ -163,6 +163,15 @@ def loginUser(request):
         userName = parsed_data.get('username')
         password = parsed_data.get('password')
         emailFromFrontend = parsed_data.get('email')
+        
+        #if username doesn't exist, then error msg would be sent
+        if not User.objects.filter(username=userName).exists():
+            responseObject = {
+                "status": 404,
+                "response": "The username doesn't exist"
+            }
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')
 
         # Authenticating user
         user = authenticate(request, username=userName, password=password)
