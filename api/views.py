@@ -143,23 +143,34 @@ def verifyEmail(request):
 
         print(otpFromFrontend, email)
         userObject = User.objects.get(email=email)
-        otpFromBackend = OTP.objects.get(user=userObject).otp
 
-        if(str(otpFromFrontend) == str(otpFromBackend)):
-            emailverificationObject = EmailVerificationStatus(
-                is_email_verified=True, user=userObject)
-            emailverificationObject.save()
-            responseObject = {
-                "status": 200,
-                "response": "Dear "+str(userObject.username)+" your email is verified successfully !"
-            }
-            json_data = JSONRenderer().render(responseObject)
-            return HttpResponse(json_data, content_type='application/json')
+        try:
+            otpFromBackendObj = OTP.objects.get(user=userObject)
+            otpFromBackend = otpFromBackendObj.otp
 
-        else:
+            if(str(otpFromFrontend) == str(otpFromBackend)):
+                emailverificationObject = EmailVerificationStatus(
+                    is_email_verified=True, user=userObject)
+                emailverificationObject.save()
+                responseObject = {
+                    "status": 200,
+                    "response": "Dear "+str(userObject.username)+" your email is verified successfully !"
+                }
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
+
+            else:
+                responseObject = {
+                    "status": 404,
+                    "response": "Invalid OTP"
+                }
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
+        
+        except OTP.DoesNotExist:
             responseObject = {
                 "status": 404,
-                "response": "Invalid OTP"
+                "response": "Invalid Entry"
             }
             json_data = JSONRenderer().render(responseObject)
             return HttpResponse(json_data, content_type='application/json')
