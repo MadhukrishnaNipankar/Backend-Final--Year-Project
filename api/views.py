@@ -80,7 +80,11 @@ def registerUser(request):
                         # saving phone number to PhoneNumber
                         PhoneNumberObj = PhoneNumber(phone=phone, user=userObject)
                         PhoneNumberObj.save()
-
+                        
+                        #setting default loggedinStatus to false
+                        loggedinStatusObject = LoginStatus(is_loggedin=False,user=userObject)
+                        loggedinStatusObject.save()
+                        
                         # Saving the User Object
                         userObject.save()
 
