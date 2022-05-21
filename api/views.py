@@ -1311,3 +1311,47 @@ def getUserProfile(request):
             }
             json_data = JSONRenderer().render(responseObject)
             return HttpResponse(json_data, content_type='application/json')
+
+
+# Search Video 
+@csrf_exempt  # to avoid csrf forbiden verification error
+def deleteUserAcc(request):
+    try:
+                if request.method == "POST":
+                    json_data = request.body
+                    stream = io.BytesIO(json_data)
+                    parsed_data = JSONParser().parse(stream)
+                    email = parsed_data.get('email')
+
+                    userObject = User.objects.get(email=email)
+                    LoginStatusObject = LoginStatus.objects.get(user=userObject)
+
+                    if(LoginStatusObject.is_loggedin == True):  # verifying if user is logged in
+                        userObject.delete() #deletes user object 
+                        responseObject = {
+                        "status": 200,
+                        "response": "Account deleted Permanently !"
+                        }
+
+                        json_data = JSONRenderer().render(responseObject)
+                        return HttpResponse(json_data, content_type='application/json')
+
+                    responseObject = {
+                        "status": 404,
+                        "response": "You're not logged in"
+                    }
+
+                    json_data = JSONRenderer().render(responseObject)
+                    return HttpResponse(json_data, content_type='application/json')
+
+                json_data = JSONRenderer().render({"response": "POST Request Needed"})
+                return HttpResponse(json_data, content_type='application/json')
+    except:
+            responseObject = {
+                "status": 404,
+                "response": "Something went wrong ! Please try refreshing the application"
+            }
+            json_data = JSONRenderer().render(responseObject)
+            return HttpResponse(json_data, content_type='application/json')
+
+      

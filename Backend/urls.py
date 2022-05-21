@@ -41,6 +41,7 @@ urlpatterns = [
     path('getVideoFeed/', views.getVideoFeed),
     path('getYourVideos/', views.getYourVideos),
     path('getUserProfile/', views.getUserProfile),
+    path('deleteUserAcc/',views.deleteUserAcc),
     
     #for saving and getting quick notes
     path('saveQuickNotes/', views.saveQuickNotes),
