@@ -975,7 +975,7 @@ def getVideoFeed(request):
                     LoginStatusObject = LoginStatus.objects.get(user=userObject)
 
                     if(LoginStatusObject.is_loggedin == True):  # verifying if user is logged in
-                        VideoDataObjects = VideoData.objects.all()
+                        VideoDataObjects = VideoData.objects.all().order_by('?')[:4]
 
                         serializer = VideoDataSerializer(VideoDataObjects, many=True)
 
