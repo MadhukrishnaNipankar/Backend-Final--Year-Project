@@ -83,6 +83,7 @@ class ReportedBy(models.Model):
 # FOR QUICK NOTES
 class QuickNotes(models.Model):
     notes_value = models.CharField(max_length=10000000)
+    video_id = models.IntegerField(default=1)
     # associated with an user
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
