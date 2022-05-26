@@ -154,37 +154,40 @@ def verifyEmail(request):
             otpFromFrontend = parsed_data.get('otp')
             email = parsed_data.get('email')
 
-            print(otpFromFrontend, email)
-            userObject = User.objects.get(email=email)
+            # print(email)
+            # userObject = User.objects.get(email=email)
 
             try:
-                otpFromBackendObj = OTP.objects.get(user=userObject)
-                otpFromBackend = otpFromBackendObj.otp
+                otpFromBackend = OTP.objects.get(otp=int(otpFromFrontend))
+                # otpFromBackend = otpFromBackendObj.otp
+                print("success")
+                
+               
+                # if(str(otpFromFrontend) == str(otpFromBackendObj)):
+                # emailverificationObject = EmailVerificationStatus(
+                #                  is_email_verified=True, user=userObject)
+                # emailverificationObject.save()
 
-                if(str(otpFromFrontend) == str(otpFromBackend)):
-                    emailverificationObject = EmailVerificationStatus(
-                        is_email_verified=True, user=userObject)
-                    emailverificationObject.save()
-                    # responseObject = {
-                    #     "status": 200,
-                    #     "response": "Dear "+str(userObject.username)+" your email is verified successfully !"
-                    # }
-                    # json_data = JSONRenderer().render(responseObject)
-                    # return HttpResponse(json_data, content_type='application/json')
-                    return redirect("http://localhost:3000/videoFeed")
+                responseObject = {
+                                 "status": 200,
+                                 "response": "Email Verification Successfull !"
+                                     } 
+                json_data = JSONRenderer().render(responseObject)
+                return HttpResponse(json_data, content_type='application/json')
+                # return redirect("http://localhost:3000/videoFeed")
 
-                else:
-                    responseObject = {
-                        "status": 404,
-                        "response": "Invalid OTP"
-                    }
-                    json_data = JSONRenderer().render(responseObject)
-                    return HttpResponse(json_data, content_type='application/json')
+                # else:
+                #     responseObject = {
+                #         "status": 404,
+                #         "response": "Invalid OTP"
+                #     }
+                #     json_data = JSONRenderer().render(responseObject)
+                #     return HttpResponse(json_data, content_type='application/json')
 
-            except OTP.DoesNotExist:
+            except :
                 responseObject = {
                     "status": 404,
-                    "response": "Invalid Entry"
+                    "response": "Invalid OTP"
                 }
                 json_data = JSONRenderer().render(responseObject)
                 return HttpResponse(json_data, content_type='application/json')
@@ -984,7 +987,7 @@ def getVideoFeed(request):
             LoginStatusObject = LoginStatus.objects.get(user=userObject)
 
             if(LoginStatusObject.is_loggedin == True):  # verifying if user is logged in
-                VideoDataObjects = VideoData.objects.all().order_by('?')[:4]
+                VideoDataObjects = VideoData.objects.all().order_by('?')[:8]
 
                 serializer = VideoDataSerializer(VideoDataObjects, many=True)
 
